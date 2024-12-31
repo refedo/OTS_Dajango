@@ -1,4 +1,4 @@
-# Operations Tracking System (OTS)
+# Operations Tracking System (OTS) for Hexa Steel®
 
 A comprehensive system for tracking operations, including material management, production logging, and quality control. Built with Django and designed for future integration with ERP systems like Odoo or Dolibarr.
 
