@@ -73,8 +73,8 @@ class ProjectWithBuildingsForm(forms.ModelForm):
         }
 
 class ProductionLogForm(forms.ModelForm):
-    project_number = forms.ChoiceField(
-        choices=[],
+    project = forms.ModelChoiceField(
+        queryset=Project.objects.all(),
         required=True,
         widget=forms.Select(attrs={'class': 'form-select'})
     )
@@ -88,65 +88,43 @@ class ProductionLogForm(forms.ModelForm):
     class Meta:
         model = ProductionLog
         fields = [
-            'project_number', 'log_designation', 'process', 'production_date',
+            'project', 'log_designation', 'process', 'production_date',
             'produced_quantity', 'facility', 'team', 'status'
         ]
         widgets = {
-            'production_date': forms.DateInput(attrs={'type': 'date'}),
-            'produced_quantity': forms.NumberInput(attrs={'step': '0.01'}),
+            'production_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'produced_quantity': forms.NumberInput(attrs={'step': '0.01', 'class': 'form-control'}),
+            'process': forms.Select(attrs={'class': 'form-select'}),
+            'facility': forms.Select(attrs={'class': 'form-select'}),
+            'team': forms.Select(attrs={'class': 'form-select'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Get unique project numbers from raw data
-        projects = RawData.objects.values_list('project_number', flat=True).distinct()
-        self.fields['project_number'].choices = [('', '-- Select Project --')] + [(p, p) for p in sorted(projects) if p]
-        
-        # Initialize log designation choices as empty
-        self.fields['log_designation'].choices = [('', '-- Select Log Designation --')]
-        
-        # If project number is in the data, load its log designations
-        if 'project_number' in self.data:
-            project_number = self.data.get('project_number')
-            log_designations = RawData.objects.filter(
-                project_number=project_number
-            ).values_list('log_designation', flat=True).distinct()
-            self.fields['log_designation'].choices += [(l, l) for l in sorted(log_designations) if l]
-        
-        # If we're editing an existing instance, load its log designations
-        elif self.instance.pk:
-            project_number = self.instance.project_number
-            log_designations = RawData.objects.filter(
-                project_number=project_number
-            ).values_list('log_designation', flat=True).distinct()
-            self.fields['log_designation'].choices += [(l, l) for l in sorted(log_designations) if l]
-        
-        # Initialize team choices
-        self.fields['team'].queryset = ProductionTeam.objects.none()
-        
-        if 'facility' in self.data:
-            try:
-                facility_id = int(self.data.get('facility'))
-                self.fields['team'].queryset = ProductionTeam.objects.filter(facility_id=facility_id)
-            except (ValueError, TypeError):
-                pass
-        elif self.instance.pk and self.instance.facility:
-            self.fields['team'].queryset = self.instance.facility.teams.all()
+        # Get unique project numbers and their IDs from raw data
+        project_choices = Project.objects.filter(
+            id__in=RawData.objects.values_list('project', flat=True).distinct()
+        )
+        self.fields['project'].queryset = project_choices
+
+        # If we have an instance, populate log_designation choices
+        if self.instance and self.instance.pk:
+            log_choices = RawData.objects.filter(
+                project=self.instance.project
+            ).values_list('log_designation', 'log_designation').distinct()
+            self.fields['log_designation'].choices = [('', '---------')] + list(log_choices)
 
     def clean(self):
         cleaned_data = super().clean()
-        project_number = cleaned_data.get('project_number')
+        project = cleaned_data.get('project')
         log_designation = cleaned_data.get('log_designation')
-        facility = cleaned_data.get('facility')
-        team = cleaned_data.get('team')
-        produced_quantity = cleaned_data.get('produced_quantity')
 
-        if facility and team and team.facility != facility:
-            raise forms.ValidationError("Selected team does not belong to the selected facility.")
-
-        if produced_quantity is not None and produced_quantity < 0:
-            raise forms.ValidationError("Produced quantity cannot be negative.")
+        if project and log_designation:
+            # Verify that this combination exists in RawData
+            if not RawData.objects.filter(project=project, log_designation=log_designation).exists():
+                raise ValidationError('Invalid project and log designation combination.')
 
         return cleaned_data
 

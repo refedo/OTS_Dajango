@@ -59,24 +59,109 @@ class Project(models.Model):
         ('completed', 'Completed'),
         ('on_hold', 'On Hold'),
     ]
-    
-    # Internal identifier (won't be used in business logic)
-    id = models.BigAutoField(primary_key=True)
-    
-    # Business identifier (used everywhere in the system)
-    project_number = models.CharField(
-        max_length=10, 
-        unique=True, 
-        verbose_name='Project #',
-        help_text='Project number (e.g., 1001)',
-        db_index=True  # Add index for faster lookups
-    )
-    
+
+    INCOTERM_CHOICES = [
+        ('EXW', 'Ex Works'),
+        ('FOB', 'Free on Board'),
+        ('CIF', 'Cost, Insurance, and Freight'),
+        ('DDP', 'Delivered Duty Paid'),
+    ]
+
+    STRUCTURE_TYPE_CHOICES = [
+        ('INDUSTRIAL', 'Industrial Building'),
+        ('COMMERCIAL', 'Commercial Building'),
+        ('RESIDENTIAL', 'Residential Building'),
+        ('WAREHOUSE', 'Warehouse'),
+        ('OTHER', 'Other'),
+    ]
+
+    PROJECT_NATURE_CHOICES = [
+        ('NEW', 'New Construction'),
+        ('EXPANSION', 'Expansion'),
+        ('RENOVATION', 'Renovation'),
+        ('MAINTENANCE', 'Maintenance'),
+    ]
+
+    WELDING_PROCESS_CHOICES = [
+        ('SMAW', 'Shielded Metal Arc Welding'),
+        ('GMAW', 'Gas Metal Arc Welding'),
+        ('FCAW', 'Flux Cored Arc Welding'),
+        ('SAW', 'Submerged Arc Welding'),
+    ]
+
+    # Basic Information
+    estimation_number = models.CharField(max_length=20, unique=True, verbose_name='Estimation #', default='EST-000')
+    project_number = models.CharField(max_length=10, unique=True, verbose_name='Project #', help_text='Project number (e.g., 230)', db_index=True)
     name = models.CharField(max_length=255, verbose_name='Project Name')
+    project_manager = models.CharField(max_length=100, verbose_name='Project Manager', null=True, blank=True)
     client_name = models.CharField(max_length=100, verbose_name='Client Name')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
     
-    # Timestamps
+    # Contract Dates
+    contract_date = models.DateField(null=True, blank=True, verbose_name='Contract Date')
+    down_payment_date = models.DateField(null=True, blank=True, verbose_name='Down Payment Date')
+    
+    # Project Details
+    structure_type = models.CharField(max_length=50, choices=STRUCTURE_TYPE_CHOICES, verbose_name='Structure Type', default='INDUSTRIAL')
+    number_of_structures = models.IntegerField(verbose_name='No. of structures', default=1)
+    erection_subcontractor = models.CharField(max_length=100, verbose_name='Erection Subcontractor', blank=True)
+    
+    # Payments
+    down_payment = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Down Payment')
+    down_payment_ack = models.BooleanField(default=False, verbose_name='Down Payment Ack')
+    payment_2 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Payment 2')
+    payment_2_ack = models.BooleanField(default=False, verbose_name='Payment 2 Ack')
+    payment_3 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Payment 3')
+    payment_3_ack = models.BooleanField(default=False, verbose_name='Payment 3 Ack')
+    payment_4 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Payment 4')
+    payment_4_ack = models.BooleanField(default=False, verbose_name='Payment 4 Ack')
+    payment_5 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Payment 5')
+    payment_5_ack = models.BooleanField(default=False, verbose_name='Payment 5 Ack')
+    
+    # Retentions
+    preliminary_retention = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Preliminary Retention')
+    ho_retention = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='H.O Retention')
+    
+    # Contract Details
+    incoterm = models.CharField(max_length=20, choices=INCOTERM_CHOICES, verbose_name='Incoterm', default='EXW')
+    scope_of_work = models.TextField(verbose_name='Scope of Work', default='')
+    project_nature = models.CharField(max_length=20, choices=PROJECT_NATURE_CHOICES, verbose_name='Project Nature', default='NEW')
+    
+    # Technical Details
+    contractual_tonnage = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Contractual Tonnage', default=0)
+    engineering_tonnage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Engineering Tonnage')
+    galvanized = models.BooleanField(default=False, verbose_name='Galvanized')
+    galvanization_microns = models.IntegerField(null=True, blank=True, verbose_name='Galvanization Microns')
+    area = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Area', default=0)
+    m2_per_ton = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='m2/Ton', default=0)
+    
+    # Paint Details
+    paint_coat_1 = models.CharField(max_length=100, null=True, blank=True, verbose_name='Paint Coat 1')
+    coat_1_microns = models.IntegerField(null=True, blank=True, verbose_name='Coat 1 - Microns')
+    coat_1_liters_needed = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Liters Needed')
+    
+    paint_coat_2 = models.CharField(max_length=100, null=True, blank=True, verbose_name='Paint Coat 2')
+    coat_2_microns = models.IntegerField(null=True, blank=True, verbose_name='Coat 2 - Microns')
+    coat_2_liters_needed = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Liters Needed')
+    
+    paint_coat_3 = models.CharField(max_length=100, null=True, blank=True, verbose_name='Paint Coat 3')
+    coat_3_microns = models.IntegerField(null=True, blank=True, verbose_name='Coat 3 - Microns')
+    coat_3_liters_needed = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Liters Needed')
+    
+    paint_coat_4 = models.CharField(max_length=100, null=True, blank=True, verbose_name='Paint Coat 4')
+    coat_4_microns = models.IntegerField(null=True, blank=True, verbose_name='Coat 4 - Microns')
+    coat_4_liters_needed = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Liters Needed')
+    
+    top_coat_ral_number = models.CharField(max_length=20, null=True, blank=True, verbose_name='Top Coat RAL Number')
+    
+    # Welding Details
+    welding_process = models.CharField(max_length=20, choices=WELDING_PROCESS_CHOICES, verbose_name='Welding Process', default='SMAW')
+    welding_wire_aws_class = models.CharField(max_length=50, verbose_name='Welding Wire AWS Class', default='')
+    pqr_no = models.CharField(max_length=50, verbose_name='PQR NO', default='')
+    wps_no = models.CharField(max_length=50, verbose_name='WPS NO', default='')
+    standard_code = models.CharField(max_length=50, verbose_name='Standard Code', default='')
+    
+    # Status and Timestamps
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,6 +174,13 @@ class Project(models.Model):
         ordering = ['project_number']
 
 class Building(models.Model):
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('on_hold', 'On Hold'),
+    ]
+    
     # Internal relation using Project's id
     project = models.ForeignKey(
         Project, 
@@ -101,48 +193,156 @@ class Building(models.Model):
         default='Building A'
     )
     description = models.TextField(blank=True, null=True)
+    
+    # Design Dates
+    design_start_date = models.DateField(null=True, blank=True, verbose_name='Design Start Date')
+    design_end_date = models.DateField(null=True, blank=True, verbose_name='Design End Date')
+    
+    # Shop Drawing Dates
+    shop_drawing_start_date = models.DateField(null=True, blank=True, verbose_name='Shop Drawing Start Date')
+    shop_drawing_end_date = models.DateField(null=True, blank=True, verbose_name='Shop Drawing End Date')
+    
+    # Production Dates
+    planned_start_date = models.DateField(null=True, blank=True, verbose_name='Production Start Date')
+    planned_end_date = models.DateField(null=True, blank=True, verbose_name='Production End Date')
+    actual_start_date = models.DateField(null=True, blank=True, verbose_name='Actual Production Start')
+    actual_end_date = models.DateField(null=True, blank=True, verbose_name='Actual Production End')
+    
+    # QC Inspection
+    qc_inspection_date = models.DateField(null=True, blank=True, verbose_name='QC Inspection Date')
+    qc_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending Inspection'),
+            ('passed', 'Passed'),
+            ('failed', 'Failed'),
+            ('conditional', 'Conditional Pass')
+        ],
+        default='pending',
+        verbose_name='QC Status'
+    )
+    qc_remarks = models.TextField(blank=True, null=True, verbose_name='QC Remarks')
+    
+    # Building Status
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started', verbose_name='Status')
+    progress = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name='Progress (%)')
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        # Display using project_number
         return f"Project {self.project.project_number} - {self.name}"
 
     @property
     def project_number(self):
-        # Convenience property to get project_number
-        return self.project.project_number
+        return self.project.project_number if self.project else None
 
     class Meta:
         verbose_name = "Building"
         verbose_name_plural = "Buildings"
-        ordering = ['project__project_number', 'name']  # Order by project_number then building name
+        ordering = ['project__project_number', 'name']
         unique_together = ['project', 'name']
 
 class RawData(models.Model):
-    row_id = models.CharField(max_length=255, unique=True, verbose_name="Row ID", editable=False, null=True, blank=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
-    building = models.ForeignKey(Building, on_delete=models.CASCADE, null=True, blank=True)
-    building_name = models.CharField(max_length=100, verbose_name="Building Name", null=True, blank=True)
-    log_designation = models.CharField(max_length=255, verbose_name="Log Designation")
-    part_designation = models.CharField(max_length=255, verbose_name="Part Designation")
-    assembly_mark = models.CharField(max_length=255, verbose_name="Assembly Mark")
-    part_mark = models.CharField(max_length=255, verbose_name="Part Mark")
-    name = models.CharField(max_length=255, blank=True, help_text="Part name or description")
-    quantity = models.IntegerField(verbose_name="Quantity", validators=[MinValueValidator(0)])
-    profile = models.CharField(max_length=255, verbose_name="Profile")
-    grade = models.CharField(max_length=255, verbose_name="Grade")
-    length = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Length(mm)", validators=[MinValueValidator(0)])
-    net_area_single = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Net Area(m²)", validators=[MinValueValidator(0)])
-    net_area_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Net Area(m²) for all", help_text="Total area from raw data", validators=[MinValueValidator(0)])
-    single_part_weight = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Single Part Weight", validators=[MinValueValidator(0)])
-    net_weight_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Net Weight(kg) for all", help_text="Total weight from raw data", validators=[MinValueValidator(0)])
-    revision = models.CharField(max_length=20, verbose_name="Revision#")
+    row_id = models.CharField(
+        max_length=255, 
+        unique=True, 
+        verbose_name="Row ID",
+        editable=False,
+        null=True,
+        blank=True
+    )
+    project = models.ForeignKey(
+        Project, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='rawdata'
+    )
+    building = models.ForeignKey(
+        Building, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='rawdata'
+    )
+    building_name = models.CharField(
+        max_length=100,
+        verbose_name="Building Name",
+        null=True,
+        blank=True
+    )
+    log_designation = models.CharField(
+        max_length=255,
+        verbose_name="Log Designation"
+    )
+    part_designation = models.CharField(
+        max_length=255,
+        verbose_name="Part Designation"
+    )
+    assembly_mark = models.CharField(
+        max_length=255,
+        verbose_name="Assembly Mark"
+    )
+    part_mark = models.CharField(
+        max_length=255,
+        verbose_name="Part Mark"
+    )
+    name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Part name or description"
+    )
+    quantity = models.IntegerField(
+        verbose_name="Quantity",
+        validators=[MinValueValidator(0)]
+    )
+    profile = models.CharField(
+        max_length=255,
+        verbose_name="Profile"
+    )
+    grade = models.CharField(
+        max_length=255,
+        verbose_name="Grade"
+    )
+    length = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Length(mm)",
+        validators=[MinValueValidator(0)]
+    )
+    net_area_single = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Net Area(m²)",
+        validators=[MinValueValidator(0)]
+    )
+    net_area_total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Net Area(m²) for all",
+        help_text="Total area from raw data",
+        validators=[MinValueValidator(0)]
+    )
+    single_part_weight = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Single Part Weight",
+        validators=[MinValueValidator(0)]
+    )
+    net_weight_total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Net Weight(kg) for all",
+        help_text="Total weight from raw data",
+        validators=[MinValueValidator(0)]
+    )
+    revision = models.CharField(
+        max_length=20,
+        verbose_name="Revision#"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.project.project_number if self.project else ''} - {self.log_designation} - {self.assembly_mark}"
 
     class Meta:
         ordering = ['-created_at']
@@ -151,9 +351,16 @@ class RawData(models.Model):
             models.Index(fields=['building', 'assembly_mark']),
         ]
 
+    def __str__(self):
+        project_num = self.project.project_number if self.project else 'No Project'
+        return f"{project_num} - {self.assembly_mark} - {self.part_mark}"
+
+    @property
+    def project_number(self):
+        return self.project.project_number if self.project else None
+
     def save(self, *args, **kwargs):
         if self.project:
-            # Add project number to the row_id for uniqueness
             if not self.row_id:
                 self.row_id = f"{self.project.project_number}_{self.log_designation}_{self.assembly_mark}_{self.part_mark}"
         super().save(*args, **kwargs)
@@ -219,13 +426,12 @@ class ProductionLog(models.Model):
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
     ]
-
-    # Use Project relationship instead of project_number
+    
     project = models.ForeignKey(
         Project, 
         on_delete=models.CASCADE, 
         related_name='production_logs',
-        null=True,  # Allow null temporarily for migration
+        null=True,
         blank=True
     )
     log_designation = models.CharField(max_length=100)
@@ -235,24 +441,21 @@ class ProductionLog(models.Model):
     facility = models.ForeignKey(Facility, on_delete=models.PROTECT)
     team = models.ForeignKey(ProductionTeam, on_delete=models.PROTECT)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)  # Keep nullable for now
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        if self.project:
-            return f"{self.project.project_number} - {self.log_designation} - {self.process}"
-        return f"{self.log_designation} - {self.process}"
-
-    @property
-    def project_number(self):
-        # Convenience property to get project_number
-        return self.project.project_number if self.project else None
 
     class Meta:
         ordering = ['-production_date']
         verbose_name = "Production Log"
         verbose_name_plural = "Production Logs"
+
+    def __str__(self):
+        return f"{self.project.project_number if self.project else 'No Project'} - {self.log_designation} ({self.process.name})"
+
+    @property
+    def project_number(self):
+        return self.project.project_number if self.project else None
 
 class QualityCheck(models.Model):
     RESULT_CHOICES = [
@@ -279,7 +482,6 @@ class QualityCheck(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.raw_data and self.production_log and self.production_log.raw_data:
-            # Link to the same raw data as the production log
             self.raw_data = self.production_log.raw_data
         super().save(*args, **kwargs)
 

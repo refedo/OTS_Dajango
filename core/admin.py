@@ -28,28 +28,143 @@ class ProductionProcessAdmin(admin.ModelAdmin):
 class BuildingInline(admin.TabularInline):
     model = Building
     extra = 1
-    fields = ['name', 'description']
+    fields = [
+        'name',
+        'status',
+        'progress',
+        ('design_start_date', 'design_end_date'),
+        ('shop_drawing_start_date', 'shop_drawing_end_date'),
+        ('planned_start_date', 'planned_end_date'),
+        'qc_status'
+    ]
+    classes = ('collapse',)
+    verbose_name = "Building"
+    verbose_name_plural = "Buildings"
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('project_number', 'name', 'status', 'client_name')
+    list_display = ('project_number', 'name', 'status', 'client_name', 'contract_date')
+    list_filter = ('status', 'contract_date')
     search_fields = ('project_number', 'name', 'client_name')
-    list_filter = ('status',)
+    date_hierarchy = 'contract_date'
+    
     fieldsets = (
-        ('Project Information', {
+        ('Basic Information', {
             'fields': (
-                'project_number', 'name',
-                'client_name', 'status'
-            )
+                'estimation_number', 'project_number', 'name',
+                'project_manager', 'client_name', 'status'
+            ),
+            'classes': ('wide',)
+        }),
+        ('Contract Dates', {
+            'fields': (
+                'contract_date', 'down_payment_date'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Project Details', {
+            'fields': (
+                'structure_type', 'number_of_structures',
+                'erection_subcontractor', 'project_nature',
+                'scope_of_work'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Contract Details', {
+            'fields': (
+                'incoterm', 'contractual_tonnage',
+                'engineering_tonnage', 'area', 'm2_per_ton'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Payments', {
+            'fields': (
+                ('down_payment', 'down_payment_ack'),
+                ('payment_2', 'payment_2_ack'),
+                ('payment_3', 'payment_3_ack'),
+                ('payment_4', 'payment_4_ack'),
+                ('payment_5', 'payment_5_ack'),
+                'preliminary_retention', 'ho_retention'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Technical Specifications', {
+            'fields': (
+                'galvanized', 'galvanization_microns',
+                'welding_process', 'welding_wire_aws_class',
+                'pqr_no', 'wps_no', 'standard_code'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Paint System', {
+            'fields': (
+                ('paint_coat_1', 'coat_1_microns', 'coat_1_liters_needed'),
+                ('paint_coat_2', 'coat_2_microns', 'coat_2_liters_needed'),
+                ('paint_coat_3', 'coat_3_microns', 'coat_3_liters_needed'),
+                ('paint_coat_4', 'coat_4_microns', 'coat_4_liters_needed'),
+                'top_coat_ral_number'
+            ),
+            'classes': ('collapse',)
         }),
     )
+    
     inlines = [BuildingInline]
+    
+    class Media:
+        css = {
+            'all': ('admin/css/forms.css',)
+        }
+        js = ('admin/js/collapse.js',)
 
 @admin.register(Building)
 class BuildingAdmin(admin.ModelAdmin):
-    list_display = ['name', 'project', 'description']
-    list_filter = ['project']
-    search_fields = ['name', 'project__name']
+    list_display = [
+        'name', 'project_number', 'status', 'progress',
+        'design_start_date', 'shop_drawing_start_date',
+        'planned_start_date', 'qc_status'
+    ]
+    list_filter = ['project', 'status', 'qc_status']
+    search_fields = ['name', 'project__name', 'project__project_number']
+    date_hierarchy = 'planned_start_date'
+    
+    def project_number(self, obj):
+        return obj.project.project_number
+    project_number.short_description = 'Project #'
+    project_number.admin_order_field = 'project__project_number'
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('project', 'name', 'description'),
+            'classes': ('wide',)
+        }),
+        ('Status', {
+            'fields': ('status', 'progress'),
+            'classes': ('wide',)
+        }),
+        ('Design Phase', {
+            'fields': (('design_start_date', 'design_end_date'),),
+            'classes': ('collapse',)
+        }),
+        ('Shop Drawing Phase', {
+            'fields': (('shop_drawing_start_date', 'shop_drawing_end_date'),),
+            'classes': ('collapse',)
+        }),
+        ('Production Phase', {
+            'fields': (
+                ('planned_start_date', 'planned_end_date'),
+                ('actual_start_date', 'actual_end_date')
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Quality Control', {
+            'fields': (
+                'qc_inspection_date',
+                'qc_status',
+                'qc_remarks'
+            ),
+            'classes': ('collapse',)
+        })
+    )
 
 @admin.register(ProductionLog)
 class ProductionLogAdmin(admin.ModelAdmin):

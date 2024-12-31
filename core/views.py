@@ -59,7 +59,7 @@ def material_edit(request, pk):
 
 @login_required
 def project_list(request):
-    projects = Project.objects.all().order_by('-planned_start_date')
+    projects = Project.objects.all().order_by('-contract_date')
     return render(request, 'core/project_list.html', {'projects': projects})
 
 @login_required
@@ -126,18 +126,19 @@ def production_list(request):
 def production_log_create(request):
     # Get search parameters
     search_query = request.GET.get('search', '')
-    project_number = request.GET.get('project_number', '')
+    project_id = request.GET.get('project', '')
     building_name = request.GET.get('building_name', '')
     log_designation = request.GET.get('log_designation', '')
 
     # Base query for raw data
-    raw_data_query = RawData.objects.values(
-        'id', 'project_number', 'log_designation', 'building_name', 'name', 'profile', 'quantity'
+    raw_data_query = RawData.objects.select_related('project').values(
+        'id', 'project__project_number', 'log_designation', 'building_name', 
+        'name', 'profile', 'quantity'
     )
 
     # Get total produced quantities for each log designation
     produced_qty_subquery = ProductionLog.objects.filter(
-        project_number=OuterRef('project_number'),
+        project=OuterRef('project'),
         log_designation=OuterRef('log_designation')
     ).values('log_designation').annotate(
         total_produced=Sum('produced_quantity', output_field=FloatField())
@@ -150,15 +151,15 @@ def production_log_create(request):
     )
 
     # Apply filters
-    if project_number:
-        log_items = log_items.filter(project_number__icontains=project_number)
+    if project_id:
+        log_items = log_items.filter(project_id=project_id)
     if building_name:
         log_items = log_items.filter(building_name__icontains=building_name)
     if log_designation:
         log_items = log_items.filter(log_designation__icontains=log_designation)
     if search_query:
         log_items = log_items.filter(
-            Q(project_number__icontains=search_query) |
+            Q(project__project_number__icontains=search_query) |
             Q(building_name__icontains=search_query) |
             Q(log_designation__icontains=search_query) |
             Q(name__icontains=search_query)
@@ -166,7 +167,7 @@ def production_log_create(request):
 
     # Only show items with remaining quantity
     log_items = log_items.filter(remaining_quantity__gt=0).order_by(
-        'project_number', 'building_name', 'log_designation'
+        'project__project_number', 'building_name', 'log_designation'
     )
 
     # Get choices for dropdowns
@@ -178,13 +179,6 @@ def production_log_create(request):
         selected_items = request.POST.getlist('selected_items')
         if selected_items:
             try:
-                # Get the Personnel instance for the current user
-                try:
-                    personnel = Personnel.objects.get(employee_id=request.user.username)
-                except Personnel.DoesNotExist:
-                    messages.error(request, 'You must have a Personnel record to create production logs. Please contact your administrator.')
-                    return redirect('production_list')
-
                 # Get common data for all logs
                 process_ids = request.POST.getlist('process')
                 if not process_ids:
@@ -202,31 +196,22 @@ def production_log_create(request):
                 success_count = 0
                 for item_id in selected_items:
                     try:
-                        raw_data_item = RawData.objects.get(id=item_id)
+                        raw_data_item = RawData.objects.select_related('project').get(id=item_id)
                         quantity = request.POST.get(f'quantities[{item_id}]')
 
                         if quantity and quantity.strip():
-                            # Get or create the project
-                            project, _ = Project.objects.get_or_create(
-                                project_number=raw_data_item.project_number,
-                                defaults={
-                                    'name': f'Project {raw_data_item.project_number}',
-                                    'status': 'in_progress'
-                                }
-                            )
-
                             # Create a production log for each selected process
                             for process_id in process_ids:
                                 ProductionLog.objects.create(
-                                    project_number=project.project_number,
+                                    project=raw_data_item.project,
                                     log_designation=raw_data_item.log_designation,
                                     process_id=process_id,
                                     production_date=production_date,
-                                    produced_quantity=float(quantity),  # Use full quantity for each process
+                                    produced_quantity=float(quantity),
                                     facility_id=facility_id,
                                     team_id=team_id,
-                                    created_by=personnel,
-                                    status='completed'  # Default to completed for now
+                                    created_by=request.user,
+                                    status='completed'
                                 )
                             success_count += 1
 
