@@ -1,0 +1,21 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .button {
+        background: #79aec8;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: #fff;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: bold;
+    }
+    .button:hover {
+        background: #609ab6;
+        color: #fff;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Production List{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table th {
+        white-space: nowrap;
+    }
+    .select-checkbox {
+        width: 18px;
+        height: 18px;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,.075);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">{{ title }}</h2>
+        <div class="d-flex gap-2">
+            <a href="{% url 'production_log_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create Production Log
+            </a>
+        </div>
+    </div>
+
+    <form id="bulkDeleteForm" action="{% url 'production_log_bulk_delete' %}" method="post">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                            <label class="form-check-label" for="selectAll">Select All</label>
+                        </div>
+                        <button type="button" id="deleteSelected" class="btn btn-danger" style="display: none;">
+                            <i class="fas fa-trash"></i> Delete Selected
+                        </button>
+                    </div>
+                    
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"></th>
+                                <th>Log Designation</th>
+                                <th>Process</th>
+                                <th>Facility</th>
+                                <th>Team</th>
+                                <th>Production Date</th>
+                                <th>Produced Quantity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in production_logs %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" 
+                                               name="selected_logs" 
+                                               value="{{ log.id }}" 
+                                               class="form-check-input select-checkbox">
+                                    </td>
+                                    <td>{{ log.log_designation }}</td>
+                                    <td>{{ log.process.name }}</td>
+                                    <td>{{ log.facility.name }}</td>
+                                    <td>{{ log.team.name }}</td>
+                                    <td>{{ log.production_date }}</td>
+                                    <td>{{ log.produced_quantity }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'production_log_edit' log.id %}" 
+                                               class="btn btn-outline-primary"
+                                               title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'production_log_delete' log.id %}" 
+                                               class="btn btn-outline-danger"
+                                               title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No production logs found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the selected production logs? This action cannot be undone.</p>
+                <p class="text-danger" id="selectedCount"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bulkDeleteForm');
+    const selectAll = document.getElementById('selectAll');
+    const deleteButton = document.getElementById('deleteSelected');
+    const checkboxes = document.querySelectorAll('input[name="selected_logs"]');
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    
+    // Handle select all checkbox
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateDeleteButton();
+    });
+    
+    // Handle individual checkboxes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateDeleteButton();
+            // Update select all checkbox
+            selectAll.checked = Array.from(checkboxes).every(c => c.checked);
+        });
+    });
+    
+    // Update delete button visibility
+    function updateDeleteButton() {
+        const selectedCount = document.querySelectorAll('input[name="selected_logs"]:checked').length;
+        deleteButton.style.display = selectedCount > 0 ? 'block' : 'none';
+    }
+    
+    // Handle delete button click
+    deleteButton.addEventListener('click', function() {
+        const selectedCount = document.querySelectorAll('input[name="selected_logs"]:checked').length;
+        document.getElementById('selectedCount').textContent = 
+            `You are about to delete ${selectedCount} production log${selectedCount !== 1 ? 's' : ''}.`;
+        deleteModal.show();
+    });
+    
+    // Handle confirm delete
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+        form.submit();
+    });
+});
+</script>
+{% endblock %}

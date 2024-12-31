@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-3">{{ title }}</h2>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Production Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Project Number</dt>
+                                <dd class="col-sm-8">{{ production_log.project.project_number }}</dd>
+                                
+                                <dt class="col-sm-4">Log Designation</dt>
+                                <dd class="col-sm-8">{{ production_log.log_designation }}</dd>
+                                
+                                <dt class="col-sm-4">Process</dt>
+                                <dd class="col-sm-8">{{ production_log.process.name }}</dd>
+                                
+                                <dt class="col-sm-4">Production Date</dt>
+                                <dd class="col-sm-8">{{ production_log.production_date }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Facility</dt>
+                                <dd class="col-sm-8">{{ production_log.facility.name }}</dd>
+                                
+                                <dt class="col-sm-4">Team</dt>
+                                <dd class="col-sm-8">{{ production_log.team.name }}</dd>
+                                
+                                <dt class="col-sm-4">Produced Quantity</dt>
+                                <dd class="col-sm-8">{{ production_log.produced_quantity }}</dd>
+                                
+                                <dt class="col-sm-4">Created By</dt>
+                                <dd class="col-sm-8">{{ production_log.created_by.first_name }} {{ production_log.created_by.last_name }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if raw_data %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Raw Data Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Part Name</dt>
+                                <dd class="col-sm-8">{{ raw_data.name }}</dd>
+                                
+                                <dt class="col-sm-4">Profile</dt>
+                                <dd class="col-sm-8">{{ raw_data.profile }}</dd>
+                                
+                                <dt class="col-sm-4">Grade</dt>
+                                <dd class="col-sm-8">{{ raw_data.grade }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Total Quantity</dt>
+                                <dd class="col-sm-8">{{ raw_data.quantity }}</dd>
+                                
+                                <dt class="col-sm-4">Building Name</dt>
+                                <dd class="col-sm-8">{{ raw_data.building_name }}</dd>
+                                
+                                <dt class="col-sm-4">Revision</dt>
+                                <dd class="col-sm-8">{{ raw_data.revision }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% if quality_checks %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Quality Checks</h5>
+                    <a href="{% url 'quality_check_create' production_log.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Check
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Measurement</th>
+                                    <th>Result</th>
+                                    <th>Inspector</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for check in quality_checks %}
+                                <tr>
+                                    <td>{{ check.parameter }}</td>
+                                    <td>{{ check.measurement }}</td>
+                                    <td>
+                                        <span class="badge {% if check.result == 'pass' %}bg-success{% elif check.result == 'fail' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ check.get_result_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ check.inspector.get_full_name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if material_usage %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Material Usage</h5>
+                    <a href="{% url 'material_usage_create' production_log.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Material
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Quantity Used</th>
+                                    <th>Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usage in material_usage %}
+                                <tr>
+                                    <td>{{ usage.material.name }}</td>
+                                    <td>{{ usage.quantity_used }}</td>
+                                    <td>{{ usage.material.unit }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Raw Data{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">{{ action }} Raw Data Entry</h3>
+        </div>
+        <div class="p-6">
+            <form method="post" novalidate class="space-y-6">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.project_number.id_for_label }}" class="block text-sm font-medium text-gray-700">Project Number</label>
+                        {{ form.project_number }}
+                        {% if form.project_number.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.project_number.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.log_designation.id_for_label }}" class="block text-sm font-medium text-gray-700">Log Designation</label>
+                        {{ form.log_designation }}
+                        {% if form.log_designation.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.log_designation.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.part_designation.id_for_label }}" class="block text-sm font-medium text-gray-700">Part Designation</label>
+                        {{ form.part_designation }}
+                        {% if form.part_designation.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.part_designation.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.assembly_mark.id_for_label }}" class="block text-sm font-medium text-gray-700">Assembly Mark</label>
+                        {{ form.assembly_mark }}
+                        {% if form.assembly_mark.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.assembly_mark.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.sub_assembly_mark.id_for_label }}" class="block text-sm font-medium text-gray-700">Sub-Assembly Mark</label>
+                        {{ form.sub_assembly_mark }}
+                        {% if form.sub_assembly_mark.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.sub_assembly_mark.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.part_mark.id_for_label }}" class="block text-sm font-medium text-gray-700">Part Mark</label>
+                        {{ form.part_mark }}
+                        {% if form.part_mark.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.part_mark.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-gray-700">Quantity</label>
+                        {{ form.quantity }}
+                        {% if form.quantity.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.quantity.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.profile.id_for_label }}" class="block text-sm font-medium text-gray-700">Profile</label>
+                        {{ form.profile }}
+                        {% if form.profile.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.profile.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.grade.id_for_label }}" class="block text-sm font-medium text-gray-700">Grade</label>
+                        {{ form.grade }}
+                        {% if form.grade.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.grade.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.length.id_for_label }}" class="block text-sm font-medium text-gray-700">Length (mm)</label>
+                        {{ form.length }}
+                        {% if form.length.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.length.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.net_area_single.id_for_label }}" class="block text-sm font-medium text-gray-700">Net Area (m²) for one</label>
+                        {{ form.net_area_single }}
+                        {% if form.net_area_single.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.net_area_single.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.single_part_weight.id_for_label }}" class="block text-sm font-medium text-gray-700">Single Part Weight</label>
+                        {{ form.single_part_weight }}
+                        {% if form.single_part_weight.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.single_part_weight.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.revision.id_for_label }}" class="block text-sm font-medium text-gray-700">Revision#</label>
+                        {{ form.revision }}
+                        {% if form.revision.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.revision.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.building_designation.id_for_label }}" class="block text-sm font-medium text-gray-700">Building Designation</label>
+                        {{ form.building_designation }}
+                        {% if form.building_designation.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.building_designation.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.building_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Building Name</label>
+                        {{ form.building_name }}
+                        {% if form.building_name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.building_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'raw_data_list' %}" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    input[type="text"],
+    input[type="number"] {
+        @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm;
+    }
+</style>
+{% endblock %}

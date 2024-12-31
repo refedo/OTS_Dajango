@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Quality Checks{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quality Checks</h2>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Production Log</th>
+                    <th>Inspector</th>
+                    <th>Check Time</th>
+                    <th>Parameter</th>
+                    <th>Measurement</th>
+                    <th>Specification</th>
+                    <th>Result</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for check in checks %}
+                <tr>
+                    <td>
+                        <a href="{% url 'production_detail' check.production_log.id %}">
+                            {{ check.production_log.project.project_number }} - {{ check.production_log.process.name }}
+                        </a>
+                    </td>
+                    <td>{{ check.inspector.get_full_name }}</td>
+                    <td>{{ check.check_time|date:"Y-m-d H:i" }}</td>
+                    <td>{{ check.parameter }}</td>
+                    <td>{{ check.measurement }}</td>
+                    <td>{{ check.specification_min }} - {{ check.specification_max }}</td>
+                    <td>
+                        <span class="badge {% if check.result == 'pass' %}bg-success{% elif check.result == 'fail' %}bg-danger{% else %}bg-warning{% endif %}">
+                            {{ check.get_result_display }}
+                        </span>
+                    </td>
+                    <td>{{ check.notes|truncatechars:30 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No quality checks found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-lg rounded-lg px-4 py-5 sm:p-6">
+        <div class="md:grid md:grid-cols-3 md:gap-6">
+            <div class="md:col-span-1">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">{{ title }}</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Project: {{ project.name }} ({{ project.project_number }})
+                </p>
+            </div>
+            <div class="mt-5 md:mt-0 md:col-span-2">
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">
+                                Warning
+                            </h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>
+                                    Are you sure you want to delete the building "{{ building.name }}"? This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Building Number</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ building.building_number }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Name</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ building.name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Tonnage</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{% if building.tonnage %}{{ building.tonnage }} MT{% else %}-{% endif %}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Area</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{% if building.area %}{{ building.area }} m²{% else %}-{% endif %}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-4">
+                    <a href="{% url 'building_list' project.id %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                        Cancel
+                    </a>
+                    <form method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            Delete Building
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

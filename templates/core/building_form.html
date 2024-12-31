@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-lg rounded-lg px-4 py-5 sm:p-6">
+        <div class="md:grid md:grid-cols-3 md:gap-6">
+            <div class="md:col-span-1">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">{{ title }}</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Project: {{ project.name }} ({{ project.project_number }})
+                </p>
+            </div>
+            <div class="mt-5 md:mt-0 md:col-span-2">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.building_number.label }}</label>
+                                {{ form.building_number }}
+                                {% if form.building_number.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.building_number.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.name.label }}</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.description.label }}</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.tonnage.label }}</label>
+                                    {{ form.tonnage }}
+                                    {% if form.tonnage.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.tonnage.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.area.label }}</label>
+                                    {{ form.area }}
+                                    {% if form.area.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.area.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-4">
+                        <a href="{% url 'building_list' project.id %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                            Cancel
+                        </a>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Save Building
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Tailwind classes to form inputs
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea');
+    inputs.forEach(input => {
+        input.classList.add('mt-1', 'block', 'w-full', 'rounded-md', 'border-gray-300', 'shadow-sm', 'focus:border-blue-500', 'focus:ring-blue-500', 'sm:text-sm');
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

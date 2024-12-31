@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb py-2 mb-0">
+    <li class="breadcrumb-item">
+        <a href="{% url 'dashboard' %}">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'project_list' %}">Projects</a>
+    </li>
+    <li class="breadcrumb-item active">{{ project.name }}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    {% if previous_project %}
+                        <a href="{% url 'project_detail' previous_project.id %}" class="btn btn-outline-secondary me-3" title="Previous Project">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                    {% endif %}
+                    <h2>Project {{ project.project_number }}</h2>
+                    {% if next_project %}
+                        <a href="{% url 'project_detail' next_project.id %}" class="btn btn-outline-secondary ms-3" title="Next Project">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{% url 'project_edit' project.id %}" class="btn btn-primary">Edit Project</a>
+                    <a href="{% url 'project_list' %}" class="btn btn-secondary">Back to Projects</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Production Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">Production Dashboard</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Total Weight -->
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">Total Weight</h6>
+                                    <h4 class="card-title mb-0">{{ project.get_production_stats.total_quantity|floatformat:2 }} kg</h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Produced Weight -->
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">Produced Weight</h6>
+                                    <h4 class="card-title mb-0">{{ project.get_production_stats.total_produced|floatformat:2 }} kg</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress -->
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">Progress</h6>
+                                    <h4 class="card-title mb-0">{{ project.get_production_stats.progress|floatformat:1 }}%</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Items -->
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">Total Items</h6>
+                                    <h4 class="card-title mb-0">{{ project.get_production_stats.total_items }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item Status -->
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">Completed</h6>
+                                    <h4 class="card-title mb-0">{{ project.get_production_stats.completed_count }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-warning">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">In Progress</h6>
+                                    <h4 class="card-title mb-0">{{ project.get_production_stats.in_progress_count }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">Not Started</h6>
+                                    <h4 class="card-title mb-0">{{ project.get_production_stats.not_started_count }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Information -->
+    <div class="row">
+        <!-- Basic Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" style="background-color: #e3f2fd;">
+                <div class="card-header" style="background-color: #bbdefb;">
+                    <h5 class="card-title mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Estimation #:</strong> {{ project.estimation_number|default:"-" }}</p>
+                    <p><strong>Project #:</strong> {{ project.project_number|default:"-" }}</p>
+                    <p><strong>Project Name:</strong> {{ project.name|default:"-" }}</p>
+                    <p><strong>Project Manager:</strong> {{ project.project_manager|default:"-" }}</p>
+                    <p><strong>Client Name:</strong> {{ project.client_name|default:"-" }}</p>
+                    <p><strong>Status:</strong> {{ project.get_status_display|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Details -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" style="background-color: #f3e5f5;">
+                <div class="card-header" style="background-color: #e1bee7;">
+                    <h5 class="card-title mb-0">Project Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Structure Type:</strong> {{ project.get_structure_type_display|default:"-" }}</p>
+                    <p><strong>Project Nature:</strong> {{ project.get_project_nature_display|default:"-" }}</p>
+                    <p><strong>Number of Structures:</strong> {{ project.number_of_structures|default:"-" }}</p>
+                    <p><strong>Erection Subcontractor:</strong> {{ project.erection_subcontractor|default:"-" }}</p>
+                    <p><strong>Incoterm:</strong> {{ project.get_incoterm_display|default:"-" }}</p>
+                    <p><strong>Scope of Work:</strong> {{ project.scope_of_work|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" style="background-color: #e8f5e9;">
+                <div class="card-header" style="background-color: #c8e6c9;">
+                    <h5 class="card-title mb-0">Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Contract Date:</strong> {{ project.contract_date|date:"Y-m-d"|default:"-" }}</p>
+                    <p><strong>Down Payment Date:</strong> {{ project.down_payment_date|date:"Y-m-d"|default:"-" }}</p>
+                    <p><strong>Planned Start Date:</strong> {{ project.planned_start_date|date:"Y-m-d"|default:"-" }}</p>
+                    <p><strong>Planned End Date:</strong> {{ project.planned_end_date|date:"Y-m-d"|default:"-" }}</p>
+                    <p><strong>Actual Start Date:</strong> {{ project.actual_start_date|date:"Y-m-d"|default:"-" }}</p>
+                    <p><strong>Actual End Date:</strong> {{ project.actual_end_date|date:"Y-m-d"|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" style="background-color: #fff3e0;">
+                <div class="card-header" style="background-color: #ffe0b2;">
+                    <h5 class="card-title mb-0">Financial Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Down Payment:</strong> {{ project.down_payment|default:"-" }}% {% if project.down_payment_ack %}<i class="fas fa-check text-success"></i>{% endif %}</p>
+                    <p><strong>Payment 2:</strong> {{ project.payment_2|default:"-" }}% {% if project.payment_2_ack %}<i class="fas fa-check text-success"></i>{% endif %}</p>
+                    <p><strong>Payment 3:</strong> {{ project.payment_3|default:"-" }}% {% if project.payment_3_ack %}<i class="fas fa-check text-success"></i>{% endif %}</p>
+                    <p><strong>Payment 4:</strong> {{ project.payment_4|default:"-" }}% {% if project.payment_4_ack %}<i class="fas fa-check text-success"></i>{% endif %}</p>
+                    <p><strong>Payment 5:</strong> {{ project.payment_5|default:"-" }}% {% if project.payment_5_ack %}<i class="fas fa-check text-success"></i>{% endif %}</p>
+                    <p><strong>Preliminary Retention:</strong> {{ project.preliminary_retention|default:"-" }}%</p>
+                    <p><strong>H.O Retention:</strong> {{ project.ho_retention|default:"-" }}%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Surface Treatment -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" style="background-color: #fce4ec;">
+                <div class="card-header" style="background-color: #f8bbd0;">
+                    <h5 class="card-title mb-0">Surface Treatment</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Galvanized:</strong> {{ project.is_galvanized|yesno:"Yes,No"|default:"-" }}</p>
+                    {% if project.is_galvanized %}
+                    <p><strong>Galvanization Microns:</strong> {{ project.galvanization_microns|default:"-" }}</p>
+                    {% endif %}
+                    
+                    {% if project.paint_coat_1 %}
+                    <p><strong>Paint Coat 1:</strong> {{ project.paint_coat_1 }}</p>
+                    <p class="ms-3"><strong>Microns:</strong> {{ project.coat_1_microns|default:"-" }}</p>
+                    <p class="ms-3"><strong>Liters:</strong> {{ project.coat_1_liters|default:"-" }}</p>
+                    {% endif %}
+
+                    {% if project.paint_coat_2 %}
+                    <p><strong>Paint Coat 2:</strong> {{ project.paint_coat_2 }}</p>
+                    <p class="ms-3"><strong>Microns:</strong> {{ project.coat_2_microns|default:"-" }}</p>
+                    <p class="ms-3"><strong>Liters:</strong> {{ project.coat_2_liters|default:"-" }}</p>
+                    {% endif %}
+
+                    {% if project.paint_coat_3 %}
+                    <p><strong>Paint Coat 3:</strong> {{ project.paint_coat_3 }}</p>
+                    <p class="ms-3"><strong>Microns:</strong> {{ project.coat_3_microns|default:"-" }}</p>
+                    <p class="ms-3"><strong>Liters:</strong> {{ project.coat_3_liters|default:"-" }}</p>
+                    {% endif %}
+
+                    {% if project.paint_coat_4 %}
+                    <p><strong>Paint Coat 4:</strong> {{ project.paint_coat_4 }}</p>
+                    <p class="ms-3"><strong>Microns:</strong> {{ project.coat_4_microns|default:"-" }}</p>
+                    <p class="ms-3"><strong>Liters:</strong> {{ project.coat_4_liters|default:"-" }}</p>
+                    {% endif %}
+
+                    <p><strong>Top Coat RAL:</strong> {{ project.top_coat_ral|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Welding Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" style="background-color: #e0f7fa;">
+                <div class="card-header" style="background-color: #b2ebf2;">
+                    <h5 class="card-title mb-0">Welding Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Welding Process:</strong> {{ project.get_welding_process_display|default:"-" }}</p>
+                    <p><strong>Welding Wire AWS:</strong> {{ project.welding_wire_aws|default:"-" }}</p>
+                    <p><strong>PQR Number:</strong> {{ project.pqr_number|default:"-" }}</p>
+                    <p><strong>WPS Number:</strong> {{ project.wps_number|default:"-" }}</p>
+                    <p><strong>Standard Code:</strong> {{ project.standard_code|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Engineering Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" style="background-color: #f1f8e9;">
+                <div class="card-header" style="background-color: #dcedc8;">
+                    <h5 class="card-title mb-0">Engineering Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Contractual Tonnage:</strong> {{ project.contractual_tonnage|default:"-" }} tons</p>
+                    <p><strong>Engineering Tonnage:</strong> {{ project.engineering_tonnage|default:"-" }} tons</p>
+                    <p><strong>Area:</strong> {{ project.area|default:"-" }} m²</p>
+                    <p><strong>m²/Ton:</strong> {{ project.m2_per_ton|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buildings Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background-color: #f5f5f5;">
+                <div class="card-header" style="background-color: #e0e0e0;">
+                    <h5 class="card-title mb-0">Buildings</h5>
+                    <a href="{% url 'building_create' project.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Building
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Building #</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Tonnage</th>
+                                    <th>Area</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for building in buildings %}
+                                <tr>
+                                    <td>{{ building.building_number }}</td>
+                                    <td>{{ building.name }}</td>
+                                    <td>{{ building.description|default:"-" }}</td>
+                                    <td>{{ building.tonnage|floatformat:2 }} tons</td>
+                                    <td>{{ building.area|floatformat:2 }} m²</td>
+                                    <td>
+                                        <a href="{% url 'building_edit' building.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'building_delete' building.id %}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No buildings found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td><strong>{{ total_tonnage|floatformat:2 }} tons</strong></td>
+                                    <td><strong>{{ total_area|floatformat:2 }} m²</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any JavaScript functionality here
+    });
+</script>
+{% endblock %}

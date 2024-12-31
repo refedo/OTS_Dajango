@@ -1,0 +1,666 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - OTS{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-lg rounded-lg px-4 py-5 sm:p-6">
+        <div class="md:grid md:grid-cols-3 md:gap-6">
+            <div class="md:col-span-1">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">{{ title }}</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    {% if title == 'Create Project' %}
+                    Create a new project by filling out the information below.
+                    {% else %}
+                    Update the project information below.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="mt-5 md:mt-0 md:col-span-2">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Basic Information</h4>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.estimation_number.label }}</label>
+                                {{ form.estimation_number }}
+                                {% if form.estimation_number.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.estimation_number.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.project_number.label }}</label>
+                                {{ form.project_number }}
+                                {% if form.project_number.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.project_number.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.name.label }}</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.project_manager.label }}</label>
+                                {{ form.project_manager }}
+                                {% if form.project_manager.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.project_manager.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.client_name.label }}</label>
+                                {{ form.client_name }}
+                                {% if form.client_name.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.client_name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.status.label }}</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if title == 'Create Project' %}
+                    <!-- Initial Building -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-base font-medium text-gray-900">Project Buildings</h4>
+                            <button type="button" id="add-building" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                Add Building
+                            </button>
+                        </div>
+                        
+                        <input type="hidden" name="building_set-TOTAL_FORMS" value="1" id="id_building_set-TOTAL_FORMS">
+                        <input type="hidden" name="building_set-INITIAL_FORMS" value="0" id="id_building_set-INITIAL_FORMS">
+                        <input type="hidden" name="building_set-MIN_NUM_FORMS" value="0" id="id_building_set-MIN_NUM_FORMS">
+                        <input type="hidden" name="building_set-MAX_NUM_FORMS" value="1000" id="id_building_set-MAX_NUM_FORMS">
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Number</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tonnage</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Area</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="buildings-tbody">
+                                    {% for building_form in formset.forms %}
+                                    <tr class="building-row">
+                                        <td class="px-6 py-4">
+                                            {{ building_form.building_number }}
+                                            {% for hidden in building_form.hidden_fields %}
+                                                {{ hidden }}
+                                            {% endfor %}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {{ building_form.name }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {{ building_form.description }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {{ building_form.tonnage }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {{ building_form.area }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <button type="button" class="delete-building text-red-600 hover:text-red-900">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Project Details -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Project Details</h4>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.structure_type.label }}</label>
+                                {{ form.structure_type }}
+                                {% if form.structure_type.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.structure_type.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.number_of_structures.label }}</label>
+                                {{ form.number_of_structures }}
+                                {% if form.number_of_structures.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.number_of_structures.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.project_nature.label }}</label>
+                                {{ form.project_nature }}
+                                {% if form.project_nature.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.project_nature.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.erection_subcontractor.label }}</label>
+                                {{ form.erection_subcontractor }}
+                                {% if form.erection_subcontractor.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.erection_subcontractor.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Project Timeline</h4>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.contract_date.label }}</label>
+                                {{ form.contract_date }}
+                                {% if form.contract_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.contract_date.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.down_payment_date.label }}</label>
+                                {{ form.down_payment_date }}
+                                {% if form.down_payment_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.down_payment_date.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.planned_start_date.label }}</label>
+                                {{ form.planned_start_date }}
+                                {% if form.planned_start_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.planned_start_date.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.planned_end_date.label }}</label>
+                                {{ form.planned_end_date }}
+                                {% if form.planned_end_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.planned_end_date.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.actual_start_date.label }}</label>
+                                {{ form.actual_start_date }}
+                                {% if form.actual_start_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.actual_start_date.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.actual_end_date.label }}</label>
+                                {{ form.actual_end_date }}
+                                {% if form.actual_end_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.actual_end_date.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Information -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Financial Information</h4>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.down_payment.label }}</label>
+                                    {{ form.down_payment }}
+                                    {% if form.down_payment.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.down_payment.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center">
+                                    {{ form.down_payment_ack }}
+                                    <label class="ml-2 text-sm text-gray-700">{{ form.down_payment_ack.label }}</label>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.payment_2.label }}</label>
+                                    {{ form.payment_2 }}
+                                    {% if form.payment_2.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.payment_2.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center">
+                                    {{ form.payment_2_ack }}
+                                    <label class="ml-2 text-sm text-gray-700">{{ form.payment_2_ack.label }}</label>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.payment_3.label }}</label>
+                                    {{ form.payment_3 }}
+                                    {% if form.payment_3.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.payment_3.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center">
+                                    {{ form.payment_3_ack }}
+                                    <label class="ml-2 text-sm text-gray-700">{{ form.payment_3_ack.label }}</label>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.payment_4.label }}</label>
+                                    {{ form.payment_4 }}
+                                    {% if form.payment_4.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.payment_4.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center">
+                                    {{ form.payment_4_ack }}
+                                    <label class="ml-2 text-sm text-gray-700">{{ form.payment_4_ack.label }}</label>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.payment_5.label }}</label>
+                                    {{ form.payment_5 }}
+                                    {% if form.payment_5.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.payment_5.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center">
+                                    {{ form.payment_5_ack }}
+                                    <label class="ml-2 text-sm text-gray-700">{{ form.payment_5_ack.label }}</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.preliminary_retention.label }}</label>
+                                {{ form.preliminary_retention }}
+                                {% if form.preliminary_retention.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.preliminary_retention.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.ho_retention.label }}</label>
+                                {{ form.ho_retention }}
+                                {% if form.ho_retention.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.ho_retention.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commercial Terms -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Commercial Terms</h4>
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.incoterm.label }}</label>
+                                {{ form.incoterm }}
+                                {% if form.incoterm.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.incoterm.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.scope_of_work.label }}</label>
+                                {{ form.scope_of_work }}
+                                {% if form.scope_of_work.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.scope_of_work.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Details -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Technical Details</h4>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.contractual_tonnage.label }}</label>
+                                {{ form.contractual_tonnage }}
+                                {% if form.contractual_tonnage.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.contractual_tonnage.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.engineering_tonnage.label }}</label>
+                                {{ form.engineering_tonnage }}
+                                {% if form.engineering_tonnage.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.engineering_tonnage.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.area.label }}</label>
+                                {{ form.area }}
+                                {% if form.area.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.area.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.m2_per_ton.label }}</label>
+                                {{ form.m2_per_ton }}
+                                {% if form.m2_per_ton.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.m2_per_ton.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Surface Treatment -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Surface Treatment</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex items-center">
+                                    {{ form.is_galvanized }}
+                                    <label class="ml-2 text-sm text-gray-700">{{ form.is_galvanized.label }}</label>
+                                </div>
+                                <div id="galvanization_microns_field">
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.galvanization_microns.label }}</label>
+                                    {{ form.galvanization_microns }}
+                                    {% if form.galvanization_microns.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.galvanization_microns.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.paint_coat_1.label }}</label>
+                                    {{ form.paint_coat_1 }}
+                                    {% if form.paint_coat_1.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.paint_coat_1.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_1_microns.label }}</label>
+                                    {{ form.coat_1_microns }}
+                                    {% if form.coat_1_microns.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_1_microns.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_1_liters.label }}</label>
+                                    {{ form.coat_1_liters }}
+                                    {% if form.coat_1_liters.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_1_liters.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.paint_coat_2.label }}</label>
+                                    {{ form.paint_coat_2 }}
+                                    {% if form.paint_coat_2.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.paint_coat_2.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_2_microns.label }}</label>
+                                    {{ form.coat_2_microns }}
+                                    {% if form.coat_2_microns.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_2_microns.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_2_liters.label }}</label>
+                                    {{ form.coat_2_liters }}
+                                    {% if form.coat_2_liters.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_2_liters.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.paint_coat_3.label }}</label>
+                                    {{ form.paint_coat_3 }}
+                                    {% if form.paint_coat_3.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.paint_coat_3.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_3_microns.label }}</label>
+                                    {{ form.coat_3_microns }}
+                                    {% if form.coat_3_microns.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_3_microns.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_3_liters.label }}</label>
+                                    {{ form.coat_3_liters }}
+                                    {% if form.coat_3_liters.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_3_liters.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.paint_coat_4.label }}</label>
+                                    {{ form.paint_coat_4 }}
+                                    {% if form.paint_coat_4.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.paint_coat_4.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_4_microns.label }}</label>
+                                    {{ form.coat_4_microns }}
+                                    {% if form.coat_4_microns.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_4_microns.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">{{ form.coat_4_liters.label }}</label>
+                                    {{ form.coat_4_liters }}
+                                    {% if form.coat_4_liters.errors %}
+                                    <p class="mt-2 text-sm text-red-600">{{ form.coat_4_liters.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.top_coat_ral.label }}</label>
+                                {{ form.top_coat_ral }}
+                                {% if form.top_coat_ral.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.top_coat_ral.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Welding Information -->
+                    <div class="bg-gray-50 px-4 py-5 sm:p-6 rounded-md">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">Welding Information</h4>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.welding_process.label }}</label>
+                                {{ form.welding_process }}
+                                {% if form.welding_process.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.welding_process.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.welding_wire_aws.label }}</label>
+                                {{ form.welding_wire_aws }}
+                                {% if form.welding_wire_aws.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.welding_wire_aws.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.pqr_number.label }}</label>
+                                {{ form.pqr_number }}
+                                {% if form.pqr_number.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.pqr_number.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.wps_number.label }}</label>
+                                {{ form.wps_number }}
+                                {% if form.wps_number.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.wps_number.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">{{ form.standard_code.label }}</label>
+                                {{ form.standard_code }}
+                                {% if form.standard_code.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.standard_code.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-4">
+                        <a href="{% url 'project_list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                            Cancel
+                        </a>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Save Project
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Style checkboxes
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('h-4', 'w-4', 'rounded', 'border-gray-300', 'text-blue-600', 'focus:ring-blue-500');
+    });
+
+    // Building formset handling
+    const addButton = document.getElementById('add-building');
+    const tbody = document.getElementById('buildings-tbody');
+    const totalForms = document.getElementById('id_building_set-TOTAL_FORMS');
+
+    if (addButton && tbody && totalForms) {
+        let formCount = parseInt(totalForms.value);
+
+        function updateFormIndex() {
+            const rows = tbody.getElementsByClassName('building-row');
+            for (let i = 0; i < rows.length; i++) {
+                const inputs = rows[i].getElementsByTagName('input');
+                const textareas = rows[i].getElementsByTagName('textarea');
+                const allFields = [...inputs, ...textareas];
+                
+                allFields.forEach(field => {
+                    const name = field.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/building_set-\d+-/, `building_set-${i}-`);
+                        field.setAttribute('name', newName);
+                        field.setAttribute('id', `id_${newName}`);
+                    }
+                });
+            }
+            totalForms.value = rows.length;
+        }
+
+        function getEmptyForm() {
+            const template = `
+                <tr class="building-row">
+                    <td class="px-6 py-4">
+                        <input type="text" name="building_set-${formCount}-building_number" class="form-control" id="id_building_set-${formCount}-building_number">
+                    </td>
+                    <td class="px-6 py-4">
+                        <input type="text" name="building_set-${formCount}-name" class="form-control" id="id_building_set-${formCount}-name">
+                    </td>
+                    <td class="px-6 py-4">
+                        <textarea name="building_set-${formCount}-description" class="form-control" id="id_building_set-${formCount}-description" rows="2"></textarea>
+                    </td>
+                    <td class="px-6 py-4">
+                        <input type="number" name="building_set-${formCount}-tonnage" class="form-control" id="id_building_set-${formCount}-tonnage" step="0.01">
+                    </td>
+                    <td class="px-6 py-4">
+                        <input type="number" name="building_set-${formCount}-area" class="form-control" id="id_building_set-${formCount}-area" step="0.01">
+                    </td>
+                    <td class="px-6 py-4">
+                        <button type="button" class="delete-building text-red-600 hover:text-red-900">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            return template;
+        }
+
+        addButton.addEventListener('click', function() {
+            const newRow = getEmptyForm();
+            tbody.insertAdjacentHTML('beforeend', newRow);
+            formCount++;
+            totalForms.value = formCount;
+
+            // Add event listener to new delete button
+            const newDeleteButton = tbody.lastElementChild.querySelector('.delete-building');
+            if (newDeleteButton) {
+                newDeleteButton.addEventListener('click', function() {
+                    if (tbody.getElementsByClassName('building-row').length > 1) {
+                        newDeleteButton.closest('.building-row').remove();
+                        formCount--;
+                        totalForms.value = formCount;
+                        updateFormIndex();
+                    }
+                });
+            }
+
+            // Add Tailwind classes to new inputs
+            const newInputs = tbody.lastElementChild.querySelectorAll('input, textarea');
+            newInputs.forEach(input => {
+                input.classList.add('mt-1', 'block', 'w-full', 'rounded-md', 'border-gray-300', 'shadow-sm', 'focus:border-blue-500', 'focus:ring-blue-500', 'sm:text-sm');
+            });
+        });
+
+        // Add event listeners to existing delete buttons
+        document.querySelectorAll('.delete-building').forEach(button => {
+            button.addEventListener('click', function() {
+                if (tbody.getElementsByClassName('building-row').length > 1) {
+                    button.closest('.building-row').remove();
+                    formCount--;
+                    totalForms.value = formCount;
+                    updateFormIndex();
+                }
+            });
+        });
+
+        // Add Tailwind classes to existing inputs
+        const allInputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], textarea, select');
+        allInputs.forEach(input => {
+            input.classList.add('mt-1', 'block', 'w-full', 'rounded-md', 'border-gray-300', 'shadow-sm', 'focus:border-blue-500', 'focus:ring-blue-500', 'sm:text-sm');
+        });
+    }
+
+    // Galvanization handling
+    const isGalvanizedField = document.getElementById('id_is_galvanized');
+    const galvanizationMicronsField = document.getElementById('galvanization_microns_field');
+
+    function toggleGalvanizationMicrons() {
+        if (isGalvanizedField.checked) {
+            galvanizationMicronsField.style.display = 'block';
+        } else {
+            galvanizationMicronsField.style.display = 'none';
+        }
+    }
+
+    if (isGalvanizedField && galvanizationMicronsField) {
+        toggleGalvanizationMicrons();
+        isGalvanizedField.addEventListener('change', toggleGalvanizationMicrons);
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

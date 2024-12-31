@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Buildings - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">Buildings</h1>
+                <p class="mt-1 text-sm text-gray-600">
+                    Project: {{ project.name }} ({{ project.project_number }})
+                </p>
+            </div>
+            <a href="{% url 'building_create' project.id %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-plus mr-2"></i>Add Building
+            </a>
+        </div>
+
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Building Number
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tonnage
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Area
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Last Updated
+                        </th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Actions</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for building in buildings %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ building.building_number }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ building.name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if building.tonnage %}{{ building.tonnage }} MT{% else %}-{% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if building.area %}{{ building.area }} m²{% else %}-{% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ building.updated_at|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{% url 'building_edit' building.id %}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+                            <a href="#" onclick="confirmDelete('{% url 'building_delete' building.id %}')" class="text-red-600 hover:text-red-900">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            No buildings added yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-50">
+                    <tr>
+                        <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            Total
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ buildings|length }} buildings
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {% with total_tonnage=0 %}
+                            {% for building in buildings %}
+                                {% if building.tonnage %}
+                                    {% with total_tonnage=total_tonnage|add:building.tonnage %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ total_tonnage|default:0 }} MT
+                            {% endwith %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {% with total_area=0 %}
+                            {% for building in buildings %}
+                                {% if building.area %}
+                                    {% with total_area=total_area|add:building.area %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ total_area|default:0 }} m²
+                            {% endwith %}
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function confirmDelete(url) {
+    if (confirm('Are you sure you want to delete this building?')) {
+        window.location.href = url;
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

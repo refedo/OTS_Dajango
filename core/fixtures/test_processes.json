@@ -1,0 +1,24 @@
+[
+    {
+        "model": "core.productionprocess",
+        "pk": 1,
+        "fields": {
+            "name": "Welding Process A",
+            "category": "PRODUCTION",
+            "is_active": true,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "core.productionprocess",
+        "pk": 2,
+        "fields": {
+            "name": "Cutting Process A",
+            "category": "PRODUCTION",
+            "is_active": true,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z"
+        }
+    }
+]
