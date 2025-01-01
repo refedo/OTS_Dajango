@@ -138,7 +138,7 @@ def production_log_create(request):
 
     # Get total produced quantities for each log designation
     produced_qty_subquery = ProductionLog.objects.filter(
-        project=OuterRef('project'),
+        project_number=OuterRef('project__project_number'),
         log_designation=OuterRef('log_designation')
     ).values('log_designation').annotate(
         total_produced=Sum('produced_quantity', output_field=FloatField())
@@ -203,7 +203,7 @@ def production_log_create(request):
                             # Create a production log for each selected process
                             for process_id in process_ids:
                                 ProductionLog.objects.create(
-                                    project=raw_data_item.project,
+                                    project_number=raw_data_item.project_number,
                                     log_designation=raw_data_item.log_designation,
                                     process_id=process_id,
                                     production_date=production_date,
@@ -579,6 +579,7 @@ def production_dashboard(request):
         
         # Get production logs for this project's log designations
         production_logs = ProductionLog.objects.filter(
+            project_number=project.project_number,
             log_designation__in=log_totals.keys()
         )
         

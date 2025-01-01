@@ -48,6 +48,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 40px;"></th>
+                                <th>Project</th>
                                 <th>Log Designation</th>
                                 <th>Process</th>
                                 <th>Facility</th>
@@ -66,6 +67,7 @@
                                                value="{{ log.id }}" 
                                                class="form-check-input select-checkbox">
                                     </td>
+                                    <td>{{ log.project.project_number|default:"N/A" }}</td>
                                     <td>{{ log.log_designation }}</td>
                                     <td>{{ log.process.name }}</td>
                                     <td>{{ log.facility.name }}</td>
@@ -89,7 +91,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="8" class="text-center">No production logs found.</td>
+                                    <td colspan="9" class="text-center">No production logs found.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

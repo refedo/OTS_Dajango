@@ -91,7 +91,7 @@ class Project(models.Model):
 
     # Basic Information
     estimation_number = models.CharField(max_length=20, unique=True, verbose_name='Estimation #', default='EST-000')
-    project_number = models.CharField(max_length=10, unique=True, verbose_name='Project #', help_text='Project number (e.g., 230)', db_index=True)
+    project_number = models.CharField(max_length=50, unique=True, verbose_name='Project #', help_text='Project number (e.g., PRJ-2024-001)', db_index=True)
     name = models.CharField(max_length=255, verbose_name='Project Name')
     project_manager = models.CharField(max_length=100, verbose_name='Project Manager', null=True, blank=True)
     client_name = models.CharField(max_length=100, verbose_name='Client Name')
@@ -168,6 +168,47 @@ class Project(models.Model):
     def __str__(self):
         return f"Project {self.project_number} - {self.name}"
 
+    def get_production_stats(self):
+        from django.db.models import Sum, Count, F, Q, DecimalField
+        from django.db.models.functions import Coalesce
+
+        # Get raw data totals
+        raw_data = RawData.objects.filter(project_number=self.project_number)
+        total_quantity = raw_data.aggregate(
+            total=Coalesce(Sum('net_weight_total'), 0, output_field=DecimalField())
+        )['total']
+        total_items = raw_data.count()
+
+        # Get production logs
+        production_logs = ProductionLog.objects.filter(project_number=self.project_number)
+        total_produced = production_logs.aggregate(
+            total=Coalesce(Sum('produced_quantity'), 0, output_field=DecimalField())
+        )['total']
+
+        # Get completed items by comparing log_designation totals
+        log_totals = {}
+        for log in production_logs:
+            if log.log_designation not in log_totals:
+                log_totals[log.log_designation] = 0
+            log_totals[log.log_designation] += float(log.produced_quantity)
+
+        completed_items = 0
+        for data in raw_data:
+            if data.log_designation in log_totals:
+                if log_totals[data.log_designation] >= float(data.net_weight_total):
+                    completed_items += 1
+
+        # Calculate progress (convert to float for percentage calculation)
+        progress = float(total_produced / total_quantity * 100) if total_quantity > 0 else 0
+
+        return {
+            'total_quantity': total_quantity,
+            'total_produced': total_produced,
+            'total_items': total_items,
+            'completed_count': completed_items,
+            'progress': round(progress, 2)
+        }
+
     class Meta:
         verbose_name = "Project"
         verbose_name_plural = "Projects"
@@ -197,18 +238,14 @@ class Building(models.Model):
     # Design Dates
     design_start_date = models.DateField(null=True, blank=True, verbose_name='Design Start Date')
     design_end_date = models.DateField(null=True, blank=True, verbose_name='Design End Date')
-    
-    # Shop Drawing Dates
     shop_drawing_start_date = models.DateField(null=True, blank=True, verbose_name='Shop Drawing Start Date')
     shop_drawing_end_date = models.DateField(null=True, blank=True, verbose_name='Shop Drawing End Date')
-    
-    # Production Dates
     planned_start_date = models.DateField(null=True, blank=True, verbose_name='Production Start Date')
     planned_end_date = models.DateField(null=True, blank=True, verbose_name='Production End Date')
     actual_start_date = models.DateField(null=True, blank=True, verbose_name='Actual Production Start')
     actual_end_date = models.DateField(null=True, blank=True, verbose_name='Actual Production End')
     
-    # QC Inspection
+    # QC Information
     qc_inspection_date = models.DateField(null=True, blank=True, verbose_name='QC Inspection Date')
     qc_status = models.CharField(
         max_length=20,
@@ -223,25 +260,44 @@ class Building(models.Model):
     )
     qc_remarks = models.TextField(blank=True, null=True, verbose_name='QC Remarks')
     
-    # Building Status
+    # Building Information
+    tonnage = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='Tonnage',
+        help_text='Total tonnage for this building'
+    )
+    area = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='Area (m²)',
+        help_text='Total area of the building in square meters'
+    )
+    
+    # Status and Progress
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started', verbose_name='Status')
     progress = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name='Progress (%)')
     
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Project {self.project.project_number} - {self.name}"
-
-    @property
-    def project_number(self):
-        return self.project.project_number if self.project else None
 
     class Meta:
         verbose_name = "Building"
         verbose_name_plural = "Buildings"
         ordering = ['project__project_number', 'name']
         unique_together = ['project', 'name']
+
+    def __str__(self):
+        return f"{self.project.project_number} - {self.name}"
+
+    @property
+    def project_number(self):
+        return self.project.project_number if self.project else None
 
 class RawData(models.Model):
     row_id = models.CharField(
@@ -258,6 +314,11 @@ class RawData(models.Model):
         null=True,
         blank=True,
         related_name='rawdata'
+    )
+    project_number = models.CharField(
+        max_length=50, 
+        db_index=True,
+        default=''
     )
     building = models.ForeignKey(
         Building, 
@@ -352,17 +413,13 @@ class RawData(models.Model):
         ]
 
     def __str__(self):
-        project_num = self.project.project_number if self.project else 'No Project'
-        return f"{project_num} - {self.assembly_mark} - {self.part_mark}"
-
-    @property
-    def project_number(self):
-        return self.project.project_number if self.project else None
+        return f"{self.project_number} - {self.log_designation}"
 
     def save(self, *args, **kwargs):
-        if self.project:
+        if self.project and not self.project_number:
+            self.project_number = self.project.project_number
             if not self.row_id:
-                self.row_id = f"{self.project.project_number}_{self.log_designation}_{self.assembly_mark}_{self.part_mark}"
+                self.row_id = f"{self.project_number}_{self.log_designation}_{self.assembly_mark}_{self.part_mark}"
         super().save(*args, **kwargs)
 
 class Facility(models.Model):
@@ -434,6 +491,7 @@ class ProductionLog(models.Model):
         null=True,
         blank=True
     )
+    project_number = models.CharField(max_length=50, db_index=True, default='')
     log_designation = models.CharField(max_length=100)
     process = models.ForeignKey(ProductionProcess, on_delete=models.PROTECT)
     production_date = models.DateField()
@@ -451,11 +509,12 @@ class ProductionLog(models.Model):
         verbose_name_plural = "Production Logs"
 
     def __str__(self):
-        return f"{self.project.project_number if self.project else 'No Project'} - {self.log_designation} ({self.process.name})"
+        return f"{self.project_number} - {self.log_designation} ({self.production_date})"
 
-    @property
-    def project_number(self):
-        return self.project.project_number if self.project else None
+    def save(self, *args, **kwargs):
+        if self.project and not self.project_number:
+            self.project_number = self.project.project_number
+        super().save(*args, **kwargs)
 
 class QualityCheck(models.Model):
     RESULT_CHOICES = [
