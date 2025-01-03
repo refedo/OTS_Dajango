@@ -1,0 +1,49 @@
+{% extends 'quality/base.html' %}
+
+{% block quality_content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Quality Inspections</h1>
+        <a href="#" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            New Inspection
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for inspection in inspections %}
+        <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div class="p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ inspection.title }}</h3>
+                        <p class="text-sm text-gray-600">{{ inspection.date }}</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                        {% if inspection.status == 'Completed' %}bg-green-100 text-green-800
+                        {% elif inspection.status == 'In Progress' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ inspection.status }}
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-700">{{ inspection.description }}</p>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        Inspector: {{ inspection.inspector }}
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="#" class="text-indigo-600 hover:text-indigo-900">View</a>
+                        <a href="#" class="text-blue-600 hover:text-blue-900">Edit</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-8 text-gray-500">
+            No inspections found
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

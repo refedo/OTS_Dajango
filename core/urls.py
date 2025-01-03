@@ -4,9 +4,8 @@ from . import views
 from .import_views import RawDataImportView
 
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),
-    path('home/', views.dashboard, name='home'),  # Alias for dashboard
-    
+    path('', views.home, name='home'),
+    path('dashboard/', views.dashboard, name='dashboard'),  
     # Material URLs
     path('materials/', views.material_list, name='material_list'),
     path('materials/create/', views.material_create, name='material_create'),
@@ -33,16 +32,17 @@ urlpatterns = [
     path('building/<int:building_id>/delete/', views.building_delete, name='building_delete'),
     
     # API URLs
+    path('api/buildings/<int:project_id>/', views.get_buildings_by_project, name='get_buildings_by_project'),
     path('api/buildings-by-project/<int:project_id>/', views.get_buildings_by_project, name='buildings_by_project'),
     
     # Production URLs
     path('production/', views.production_list, name='production_list'),
     path('production/dashboard/', views.production_dashboard, name='production_dashboard'),
     path('production/create/', views.production_log_create, name='production_log_create'),
-    path('production/<int:pk>/', views.production_log_detail, name='production_detail'),
+    path('production/<int:pk>/', views.production_detail, name='production_detail'),
     path('production/<int:pk>/edit/', views.production_log_edit, name='production_log_edit'),
     path('production/<int:pk>/delete/', views.production_log_delete, name='production_log_delete'),
-    path('production/delete-selected/', views.production_log_bulk_delete, name='production_log_bulk_delete'),
+    path('production/bulk-delete/', views.production_log_bulk_delete, name='production_log_bulk_delete'),
     
     # Quality URLs
     path('quality/', views.quality_list, name='quality_list'),

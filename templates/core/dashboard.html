@@ -1,189 +1,161 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/base.html' %}
 
 {% block title %}Dashboard{% endblock %}
 
-{% block extra_css %}
-<style>
-    .stat-card {
-        transition: transform 0.2s;
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-    .project-card {
-        transition: all 0.3s;
-    }
-    .project-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .progress {
-        height: 8px;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container-fluid py-4">
+<div class="bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+    
     <!-- Stats Overview -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card stat-card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="card-title mb-0">Total Projects</h6>
-                            <h2 class="mt-2 mb-0">{{ total_projects }}</h2>
-                        </div>
-                        <div class="rounded-circle bg-white bg-opacity-25 p-3">
-                            <i class="fas fa-project-diagram fa-2x text-white"></i>
-                        </div>
-                    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Total Projects -->
+        <div class="bg-blue-50 rounded-lg p-6 hover:shadow-lg transition-all">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h6 class="text-blue-900 text-sm font-medium">Total Projects</h6>
+                    <p class="text-2xl font-bold text-blue-700 mt-2">{{ total_projects }}</p>
+                </div>
+                <div class="bg-blue-100 rounded-full p-3">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card stat-card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="card-title mb-0">Active Projects</h6>
-                            <h2 class="mt-2 mb-0">{{ active_projects }}</h2>
-                        </div>
-                        <div class="rounded-circle bg-white bg-opacity-25 p-3">
-                            <i class="fas fa-tasks fa-2x text-white"></i>
-                        </div>
-                    </div>
+
+        <!-- Active Projects -->
+        <div class="bg-green-50 rounded-lg p-6 hover:shadow-lg transition-all">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h6 class="text-green-900 text-sm font-medium">Active Projects</h6>
+                    <p class="text-2xl font-bold text-green-700 mt-2">{{ active_projects }}</p>
+                </div>
+                <div class="bg-green-100 rounded-full p-3">
+                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card stat-card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="card-title mb-0">On Hold</h6>
-                            <h2 class="mt-2 mb-0">{{ on_hold_projects }}</h2>
-                        </div>
-                        <div class="rounded-circle bg-white bg-opacity-25 p-3">
-                            <i class="fas fa-pause fa-2x text-white"></i>
-                        </div>
-                    </div>
+
+        <!-- Production Orders -->
+        <div class="bg-purple-50 rounded-lg p-6 hover:shadow-lg transition-all">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h6 class="text-purple-900 text-sm font-medium">Production Orders</h6>
+                    <p class="text-2xl font-bold text-purple-700 mt-2">{{ active_orders|default:0 }}</p>
+                </div>
+                <div class="bg-purple-100 rounded-full p-3">
+                    <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card stat-card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="card-title mb-0">Completed</h6>
-                            <h2 class="mt-2 mb-0">{{ completed_projects }}</h2>
-                        </div>
-                        <div class="rounded-circle bg-white bg-opacity-25 p-3">
-                            <i class="fas fa-check-circle fa-2x text-white"></i>
-                        </div>
-                    </div>
+
+        <!-- Materials -->
+        <div class="bg-yellow-50 rounded-lg p-6 hover:shadow-lg transition-all">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h6 class="text-yellow-900 text-sm font-medium">Total Materials</h6>
+                    <p class="text-2xl font-bold text-yellow-700 mt-2">{{ total_materials|default:0 }}</p>
+                </div>
+                <div class="bg-yellow-100 rounded-full p-3">
+                    <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Projects -->
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Recent Projects</h5>
-                        <a href="{% url 'project_list' %}" class="btn btn-sm btn-primary">
-                            View All
-                        </a>
-                    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Recent Projects -->
+        <div class="bg-white border rounded-lg shadow-sm">
+            <div class="p-4 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900">Recent Projects</h2>
+                    <a href="{% url 'project_list' %}" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Project</th>
-                                    <th>Client</th>
-                                    <th>Status</th>
-                                    <th>Progress</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for project in recent_projects %}
-                                <tr>
-                                    <td>
-                                        <a href="{% url 'project_detail' project.id %}" class="text-decoration-none">
-                                            {{ project.name }}
-                                        </a>
-                                    </td>
-                                    <td>{{ project.client_name }}</td>
-                                    <td>
-                                        <span class="badge 
-                                            {% if project.status == 'completed' %}bg-success
-                                            {% elif project.status == 'in_progress' %}bg-primary
-                                            {% elif project.status == 'on_hold' %}bg-warning
-                                            {% else %}bg-secondary{% endif %}">
-                                            {{ project.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="progress">
-                                            <div class="progress-bar" role="progressbar" 
-                                                 style="width: {{ project.progress }}%"
-                                                 aria-valuenow="{{ project.progress }}" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="100">
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center">No recent projects found.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            </div>
+            <div class="p-4">
+                <div class="space-y-4">
+                    {% for project in recent_projects %}
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">{{ project.name }}</h3>
+                            <p class="text-sm text-gray-500">{{ project.status }}</p>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {% if project.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif project.status == 'in_progress' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ project.progress }}%
+                        </span>
                     </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-500">No recent projects</p>
+                    {% endfor %}
                 </div>
             </div>
         </div>
 
-        <!-- Production Overview -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Production Overview</h5>
-                        <a href="{% url 'production_dashboard' %}" class="btn btn-sm btn-primary">
-                            Details
-                        </a>
-                    </div>
+        <!-- Recent Production Orders -->
+        <div class="bg-white border rounded-lg shadow-sm">
+            <div class="p-4 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900">Recent Orders</h2>
+                    <a href="{% url 'production:order_list' %}" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
                 </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">Overall Progress</h6>
-                        {% for process, stats in production_stats.items %}
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>{{ process }}</span>
-                                <span>{{ stats.percentage }}%</span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" 
-                                     style="width: {{ stats.percentage }}%"
-                                     aria-valuenow="{{ stats.percentage }}" 
-                                     aria-valuemin="0" 
-                                     aria-valuemax="100">
-                                </div>
-                            </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-4">
+                    {% for order in recent_orders %}
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">{{ order.number }}</h3>
+                            <p class="text-sm text-gray-500">{{ order.status }}</p>
                         </div>
-                        {% endfor %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {% if order.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif order.status == 'in_progress' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ order.progress }}%
+                        </span>
                     </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-500">No recent orders</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Material Status -->
+        <div class="bg-white border rounded-lg shadow-sm">
+            <div class="p-4 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900">Material Status</h2>
+                    <a href="{% url 'inventory:material_list' %}" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-4">
+                    {% for material in low_stock_materials %}
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">{{ material.name }}</h3>
+                            <p class="text-sm text-gray-500">{{ material.quantity }} in stock</p>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {% if material.quantity <= material.min_quantity %}bg-red-100 text-red-800
+                            {% elif material.quantity <= material.reorder_point %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-green-100 text-green-800{% endif %}">
+                            {{ material.status }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-500">No low stock materials</p>
+                    {% endfor %}
                 </div>
             </div>
         </div>

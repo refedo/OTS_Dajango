@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Filters Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Production Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="project_number" class="form-label">Project</label>
+                    <select name="project_number" id="project_number" class="form-select select2">
+                        <option value="">All Projects</option>
+                        {% for project in projects %}
+                        <option value="{{ project.project_number }}" {% if project.project_number == selected_project %}selected{% endif %}>
+                            {{ project.project_number }} - {{ project.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="building_name" class="form-label">Building</label>
+                    <select name="building_name" id="building_name" class="form-select select2">
+                        <option value="">All Buildings</option>
+                        {% for building in buildings %}
+                        <option value="{{ building.name }}" {% if building.name == selected_building %}selected{% endif %}>
+                            {{ building.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="log_designation" class="form-label">Log Designation</label>
+                    <input type="text" class="form-control" id="log_designation" name="log_designation" value="{{ selected_log_designation }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="process_search" class="form-label">Process</label>
+                    <input type="text" class="form-control" id="process_search" name="process_search" value="{{ process_search }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="facility" class="form-label">Facility</label>
+                    <input type="text" class="form-control" id="facility" name="facility" value="{{ facility_search }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="team" class="form-label">Team</label>
+                    <input type="text" class="form-control" id="team" name="team" value="{{ team_search }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label">Date From</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label">Date To</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <a href="{% url 'production_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-undo"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Progress Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Fit-up Progress</h5>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: {{ fitup_percentage }}%" 
+                             aria-valuenow="{{ fitup_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ fitup_percentage }}%
+                        </div>
+                    </div>
+                    <p class="mb-0">Total Items: {{ fitup_total }}</p>
+                    <p class="mb-0">Completed: {{ fitup_completed }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welding Progress</h5>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ welding_percentage }}%" 
+                             aria-valuenow="{{ welding_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ welding_percentage }}%
+                        </div>
+                    </div>
+                    <p class="mb-0">Total Items: {{ welding_total }}</p>
+                    <p class="mb-0">Completed: {{ welding_completed }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Visual Inspection Progress</h5>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar bg-info" role="progressbar" 
+                             style="width: {{ visual_percentage }}%" 
+                             aria-valuenow="{{ visual_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ visual_percentage }}%
+                        </div>
+                    </div>
+                    <p class="mb-0">Total Items: {{ visual_total }}</p>
+                    <p class="mb-0">Completed: {{ visual_completed }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Production Logs Table -->
+    <div class="card">
+        <div class="card-header pb-0">
+            <div class="d-flex align-items-center">
+                <h6 class="mb-0">Production Logs</h6>
+                <div class="ms-auto">
+                    <button type="button" id="deleteSelectedBtn" class="btn btn-danger btn-sm mb-0 me-2" style="display: none;">
+                        <i class="fas fa-trash me-2"></i> Delete Selected
+                    </button>
+                    <a href="{% url 'production_log_create' %}" class="btn bg-gradient-dark btn-sm mb-0">
+                        <i class="fas fa-plus me-2"></i> Create Production Log
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+            <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" width="40">
+                                <input type="checkbox" id="selectAll" class="form-check-input mt-0">
+                            </th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Project Details</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Process Info</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Quantities</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Team Info</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in production_logs %}
+                        <tr>
+                            <td class="align-middle text-center">
+                                <input type="checkbox" class="form-check-input log-checkbox" value="{{ log.id }}">
+                            </td>
+                            <td>
+                                <div class="d-flex px-2 py-1">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">{{ log.project_number }}</h6>
+                                        <p class="text-xs text-secondary mb-0">
+                                            {{ log.building_name }} - {{ log.log_designation }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-0 text-sm">{{ log.process.name }}</h6>
+                                    <p class="text-xs text-secondary mb-0">{{ log.production_date }}</p>
+                                </div>
+                            </td>
+                            <td class="align-middle text-center">
+                                <div class="d-flex flex-column">
+                                    <span class="text-secondary text-xs font-weight-bold">Produced: {{ log.produced_quantity }}</span>
+                                    <span class="text-secondary text-xs font-weight-bold">Total: {{ log.total_quantity }}</span>
+                                    <span class="text-secondary text-xs font-weight-bold">Balance: {{ log.balance_quantity }}</span>
+                                </div>
+                            </td>
+                            <td class="align-middle text-center text-sm">
+                                <div class="d-flex flex-column">
+                                    <p class="text-xs font-weight-bold mb-0">{{ log.facility.name }}</p>
+                                    <p class="text-xs text-secondary mb-0">{{ log.team.name }}</p>
+                                </div>
+                            </td>
+                            <td class="align-middle text-center">
+                                <span class="badge badge-sm {% if log.status == 'completed' %}bg-gradient-success{% elif log.status == 'in_progress' %}bg-gradient-warning{% else %}bg-gradient-secondary{% endif %}">
+                                    {{ log.status|title }}
+                                </span>
+                            </td>
+                            <td class="align-middle text-center">
+                                <div class="btn-group">
+                                    <a href="{% url 'production_detail' log.id %}" class="btn btn-link text-info text-gradient px-3 mb-0">
+                                        <i class="fas fa-eye me-2"></i>View
+                                    </a>
+                                    <a href="{% url 'production_log_edit' log.id %}" class="btn btn-link text-dark px-3 mb-0">
+                                        <i class="fas fa-pencil-alt me-2"></i>Edit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .icon-shape {
+        width: 48px;
+        height: 48px;
+        background-position: center;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .border-radius-md {
+        border-radius: 0.5rem;
+    }
+    .progress {
+        overflow: visible;
+    }
+    .progress-bar {
+        border-radius: 3px;
+        transition: width .6s ease;
+    }
+    .table > :not(caption) > * > * {
+        padding: 1rem 1rem;
+        background-color: var(--bs-table-bg);
+        border-bottom-width: 1px;
+        box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize Select2
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+
+        // Handle project change to update buildings
+        $('#project_number').change(function() {
+            const projectNumber = $(this).val();
+            const buildingSelect = $('#building_name');
+            
+            // Clear building select
+            buildingSelect.empty().append('<option value="">All Buildings</option>');
+            
+            if (projectNumber) {
+                // Get buildings for selected project
+                $.get(`/api/buildings-by-project/${projectNumber}/`, function(data) {
+                    data.forEach(function(building) {
+                        buildingSelect.append(
+                            $('<option></option>')
+                                .val(building.name)
+                                .text(building.name)
+                        );
+                    });
+                });
+            }
+        });
+
+        // Handle checkbox selection
+        $('#selectAll').change(function() {
+            $('.log-checkbox').prop('checked', $(this).prop('checked'));
+            updateDeleteButton();
+        });
+
+        $('.log-checkbox').change(function() {
+            updateDeleteButton();
+        });
+
+        function updateDeleteButton() {
+            const checkedCount = $('.log-checkbox:checked').length;
+            $('#deleteSelectedBtn').toggle(checkedCount > 0);
+        }
+
+        // Handle bulk delete
+        $('#deleteSelectedBtn').click(function() {
+            if (confirm('Are you sure you want to delete the selected logs?')) {
+                const selectedIds = $('.log-checkbox:checked').map(function() {
+                    return $(this).val();
+                }).get();
+
+                $.ajax({
+                    url: "{% url 'production_log_bulk_delete' %}",
+                    type: 'POST',
+                    data: {
+                        'ids[]': selectedIds,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Error deleting logs: ' + response.error);
+                        }
+                    },
+                    error: function() {
+                        alert('Error occurred while deleting logs');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -53,30 +53,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Format project number as user types
-    const projectNumberInput = document.querySelector('input[name="project_number"]');
-    if (projectNumberInput) {
-        projectNumberInput.addEventListener('input', function() {
-            let value = this.value.toUpperCase();
-            if (!value.startsWith('PRJ-')) {
-                value = 'PRJ-' + value;
-            }
-            // Format YYYY
-            if (value.length > 4) {
-                const year = value.substring(4).replace(/\D/g, '');
-                if (year.length > 0) {
-                    value = `PRJ-${year.padStart(4, '2')}`;
-                }
-                // Format XXX
-                if (year.length >= 4) {
-                    const num = value.substring(9).replace(/\D/g, '');
-                    if (num.length > 0) {
-                        value = `PRJ-${year.substring(0,4)}-${num.padStart(3, '0')}`;
-                    }
-                }
-            }
-            this.value = value;
-        });
-    }
 });

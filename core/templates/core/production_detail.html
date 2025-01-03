@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Production Log Details</h5>
+            <div>
+                <a href="{% url 'production_log_edit' production_log.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'production_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th style="width: 200px;">Project Number</th>
+                                <td>{{ production_log.project_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>Log Designation</th>
+                                <td>{{ production_log.log_designation }}</td>
+                            </tr>
+                            <tr>
+                                <th>Process</th>
+                                <td>{{ production_log.process.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Production Date</th>
+                                <td>{{ production_log.production_date }}</td>
+                            </tr>
+                            <tr>
+                                <th>Produced Quantity</th>
+                                <td>{{ production_log.produced_quantity }}</td>
+                            </tr>
+                            <tr>
+                                <th>Facility</th>
+                                <td>{{ production_log.facility.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Team</th>
+                                <td>{{ production_log.team.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    <span class="badge {% if production_log.status == 'completed' %}bg-success{% elif production_log.status == 'in_progress' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ production_log.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created By</th>
+                                <td>{{ production_log.created_by|default:"N/A" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Created At</th>
+                                <td>{{ production_log.created_at }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Updated</th>
+                                <td>{{ production_log.updated_at }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Quality Checks Section -->
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Quality Checks</h6>
+                            <a href="{% url 'quality_check_create' production_log.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i> Add Check
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if quality_checks %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Result</th>
+                                            <th>Inspector</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for check in quality_checks %}
+                                        <tr>
+                                            <td>{{ check.parameter }}</td>
+                                            <td>
+                                                <span class="badge {% if check.result == 'pass' %}bg-success{% elif check.result == 'fail' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                    {{ check.result|title }}
+                                                </span>
+                                            </td>
+                                            <td>{{ check.inspector }}</td>
+                                            <td>{{ check.check_time|date:"Y-m-d H:i" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">No quality checks recorded yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Material Usage Section -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Material Usage</h6>
+                            <a href="{% url 'material_usage_create' production_log.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i> Add Material
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if material_usage %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Material</th>
+                                            <th>Quantity Used</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for usage in material_usage %}
+                                        <tr>
+                                            <td>{{ usage.material.name }}</td>
+                                            <td>{{ usage.quantity_used }} {{ usage.material.unit }}</td>
+                                            <td>{{ usage.created_at|date:"Y-m-d H:i" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">No material usage recorded yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

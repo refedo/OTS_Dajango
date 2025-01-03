@@ -1,0 +1,104 @@
+{% extends 'inventory/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block inventory_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">
+            {% if form.instance.pk %}
+            Edit {{ form.instance.name }}
+            {% else %}
+            Add New Material
+            {% endif %}
+        </h1>
+        <a href="{% url 'inventory:material_list' %}?type={{ view.kwargs.type }}" 
+           class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors">
+            Back to List
+        </a>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
+                {{ form.code|as_crispy_field }}
+                {{ form.name|as_crispy_field }}
+                {{ form.quantity|as_crispy_field }}
+                {{ form.grade|as_crispy_field }}
+            </div>
+
+            <!-- Material Specific Fields -->
+            <div class="space-y-4">
+                <h2 class="text-lg font-semibold text-gray-900">Material Details</h2>
+                {% if view.kwargs.type == 'beam' %}
+                    {{ form.beam_type|as_crispy_field }}
+                    {{ form.height|as_crispy_field }}
+                    {{ form.width|as_crispy_field }}
+                    {{ form.weight_per_meter|as_crispy_field }}
+                {% elif view.kwargs.type == 'sheet' %}
+                    {{ form.sheet_type|as_crispy_field }}
+                    {{ form.thickness|as_crispy_field }}
+                    {{ form.width|as_crispy_field }}
+                    {{ form.length|as_crispy_field }}
+                {% elif view.kwargs.type == 'angle' %}
+                    {{ form.angle_type|as_crispy_field }}
+                    {{ form.height|as_crispy_field }}
+                    {{ form.width|as_crispy_field }}
+                    {{ form.thickness|as_crispy_field }}
+                {% elif view.kwargs.type == 'pipe' %}
+                    {{ form.pipe_type|as_crispy_field }}
+                    {{ form.diameter|as_crispy_field }}
+                    {{ form.thickness|as_crispy_field }}
+                    {{ form.length|as_crispy_field }}
+                    {{ form.schedule|as_crispy_field }}
+                {% elif view.kwargs.type == 'tube' %}
+                    {{ form.tube_type|as_crispy_field }}
+                    {{ form.height|as_crispy_field }}
+                    {{ form.width|as_crispy_field }}
+                    {{ form.thickness|as_crispy_field }}
+                {% elif view.kwargs.type == 'purlin' %}
+                    {{ form.purlin_type|as_crispy_field }}
+                    {{ form.height|as_crispy_field }}
+                    {{ form.width|as_crispy_field }}
+                    {{ form.thickness|as_crispy_field }}
+                {% elif view.kwargs.type == 'bar' %}
+                    {{ form.bar_type|as_crispy_field }}
+                    {{ form.diameter|as_crispy_field }}
+                    {{ form.height|as_crispy_field }}
+                    {{ form.width|as_crispy_field }}
+                    {{ form.length|as_crispy_field }}
+                {% elif view.kwargs.type == 'fastener' %}
+                    {{ form.fastener_type|as_crispy_field }}
+                    {{ form.diameter|as_crispy_field }}
+                    {{ form.length|as_crispy_field }}
+                    {{ form.thread_size|as_crispy_field }}
+                    {{ form.finish|as_crispy_field }}
+                {% elif view.kwargs.type == 'panel' %}
+                    {{ form.panel_type|as_crispy_field }}
+                    {{ form.thickness|as_crispy_field }}
+                    {{ form.width|as_crispy_field }}
+                    {{ form.length|as_crispy_field }}
+                {% elif view.kwargs.type == 'misc' %}
+                    {{ form.misc_type|as_crispy_field }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Additional Information</h2>
+            {{ form.description|as_crispy_field }}
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition-colors">
+                {% if form.instance.pk %}Update{% else %}Create{% endif %} Material
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

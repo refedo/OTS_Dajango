@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
 
 {% block title %}Create Production Log{% endblock %}
@@ -39,30 +39,21 @@
         color: #495057;
     }
 
-    /* Radio Button Styles */
-    .form-check {
-        padding: 0.5rem 1rem;
+    /* Form Control Styles */
+    .form-control, .form-select {
         border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
         border-radius: 0.25rem;
-        margin: 0.25rem;
-        transition: all 0.2s ease-in-out;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
-    .form-check:hover {
-        background-color: #f8f9fa;
+    .form-control:focus, .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
-    .form-check-input:checked + .form-check-label {
-        font-weight: 500;
-    }
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    .form-check-input {
-        margin-top: 0.3em;
-        margin-right: 0.5rem;
-    }
-    .gap-3 {
-        gap: 0.5rem !important;
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875em;
     }
 </style>
 {% endblock %}
@@ -80,10 +71,32 @@
                     <form method="post" id="productionLogForm">
                         {% csrf_token %}
                         
+                        <!-- Project Selection -->
+                        <div class="form-group">
+                            <label for="{{ form.project.id_for_label }}" class="form-label">Project</label>
+                            {{ form.project }}
+                            {% if form.project.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.project.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Building Selection -->
+                        <div class="form-group">
+                            <label for="{{ form.building.id_for_label }}" class="form-label">Building</label>
+                            {{ form.building }}
+                            {% if form.building.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.building.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
                         <!-- Item Selection -->
                         <div class="form-group">
                             <label for="item_select" class="form-label">Select Items</label>
-                            <select name="selected_items" id="item_select" class="form-select" required multiple>
+                            <select name="selected_items" id="item_select" class="form-select" required multiple style="height: auto;">
                                 {% for item in log_items %}
                                 <option value="{{ item.id }}" 
                                         data-project="{{ item.project_number }}"
@@ -92,7 +105,7 @@
                                         data-name="{{ item.name_designation }}"
                                         data-profile="{{ item.profile }}"
                                         data-remaining="{{ item.remaining_quantity }}">
-                                    {{ item.log_designation }} - {{ item.name_designation }}
+                                    {{ item.log_designation }} - {{ item.name_designation }} - {{ item.profile }} - {{ item.remaining_quantity }}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -124,75 +137,49 @@
                             </div>
                         </div>
 
-                        <!-- Production Details -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="form-label">Process (Select up to 3)</label>
-                                    <div class="d-flex flex-wrap gap-3" id="processContainer">
-                                        {% for process in processes %}
-                                        <div class="form-check">
-                                            <input type="checkbox" 
-                                                   name="process" 
-                                                   id="process_{{ process.id }}" 
-                                                   value="{{ process.id }}" 
-                                                   class="form-check-input process-checkbox"
-                                                   required>
-                                            <label class="form-check-label" for="process_{{ process.id }}">
-                                                {{ process.name }}
-                                            </label>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                    <small class="text-muted">You can select up to 3 processes</small>
-                                </div>
+                        <!-- Process Selection -->
+                        <div class="form-group mt-4">
+                            <label for="{{ form.process.id_for_label }}" class="form-label">Process</label>
+                            {{ form.process }}
+                            {% if form.process.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.process.errors }}
                             </div>
+                            {% endif %}
                         </div>
 
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="form-label">Facility</label>
-                                    <div class="d-flex flex-wrap gap-3">
-                                        {% for facility in facilities %}
-                                        <div class="form-check">
-                                            <input type="radio" 
-                                                   name="facility" 
-                                                   id="facility_{{ facility.id }}" 
-                                                   value="{{ facility.id }}" 
-                                                   class="form-check-input facility-radio"
-                                                   required>
-                                            <label class="form-check-label" for="facility_{{ facility.id }}">
-                                                {{ facility.name }}
-                                            </label>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
+                        <!-- Facility Selection -->
+                        <div class="form-group mt-4">
+                            <label for="{{ form.facility.id_for_label }}" class="form-label">Facility</label>
+                            {{ form.facility }}
+                            {% if form.facility.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.facility.errors }}
                             </div>
+                            {% endif %}
                         </div>
 
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="form-label">Team</label>
-                                    <div id="teamsContainer" class="d-flex flex-wrap gap-3">
-                                        <!-- Teams will be dynamically populated here -->
-                                    </div>
-                                </div>
+                        <!-- Team Selection -->
+                        <div class="form-group mt-4">
+                            <label for="{{ form.team.id_for_label }}" class="form-label">Team</label>
+                            {{ form.team }}
+                            {% if form.team.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.team.errors }}
                             </div>
+                            {% endif %}
                         </div>
 
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="production_date" class="form-label">Production Date</label>
-                                    <div class="input-group">
-                                        <input type="date" name="production_date" id="production_date" class="form-control" required>
-                                        <button type="button" class="btn btn-outline-secondary" id="setToday">Today</button>
-                                    </div>
-                                </div>
+                        <!-- Production Date -->
+                        <div class="form-group mt-4">
+                            <label for="{{ form.production_date.id_for_label }}" class="form-label">Production Date</label>
+                            {{ form.production_date }}
+                            {% if form.production_date.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.production_date.errors }}
                             </div>
+                            {% endif %}
+                            <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="setToday">Set to Today</button>
                         </div>
 
                         <div class="mt-4">
@@ -210,178 +197,132 @@
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     $(document).ready(function() {
-        // Initialize Select2 for item selection
+        // Initialize Select2 for all select elements
+        $('#id_project, #id_building, #id_process, #id_facility, #id_team').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+
+        // Initialize item select with Select2
         $('#item_select').select2({
             theme: 'bootstrap-5',
-            placeholder: 'Search and select items...',
-            allowClear: true,
-            templateResult: formatItem,
-            templateSelection: formatItem
+            width: '100%',
+            placeholder: 'Select items'
+        });
+
+        // Handle project change to update buildings
+        $('#id_project').change(function() {
+            const projectId = $(this).val();
+            const buildingSelect = $('#id_building');
+            
+            // Clear and disable building select
+            buildingSelect.empty().prop('disabled', true);
+            buildingSelect.append('<option value="">Select a building</option>');
+
+            if (projectId) {
+                // Fetch buildings for selected project
+                $.get(`/api/buildings/${projectId}/`, function(buildings) {
+                    buildings.forEach(function(building) {
+                        buildingSelect.append(new Option(building.name, building.id));
+                    });
+                    buildingSelect.prop('disabled', false).trigger('change');
+                });
+            }
         });
 
         // Handle facility change to update teams
-        $('.facility-radio').change(function() {
+        $('#id_facility').change(function() {
             const facilityId = $(this).val();
-            const teamsContainer = $('#teamsContainer');
+            const teamSelect = $('#id_team');
             
-            // Clear current options
-            teamsContainer.empty();
-            
+            // Clear and disable team select
+            teamSelect.empty().prop('disabled', true);
+            teamSelect.append('<option value="">Select a team</option>');
+
             if (facilityId) {
-                // Filter teams by facility
-                {% for team in teams %}
-                if ('{{ team.facility_id }}' === facilityId) {
-                    teamsContainer.append(`
-                        <div class="form-check">
-                            <input type="radio" 
-                                   name="team" 
-                                   id="team_{{ team.id }}" 
-                                   value="{{ team.id }}" 
-                                   class="form-check-input"
-                                   required>
-                            <label class="form-check-label" for="team_{{ team.id }}">
-                                {{ team.name }}
-                            </label>
-                        </div>
-                    `);
-                }
-                {% endfor %}
+                // Fetch teams for selected facility
+                $.get(`/api/teams/${facilityId}/`, function(teams) {
+                    teams.forEach(function(team) {
+                        teamSelect.append(new Option(team.name, team.id));
+                    });
+                    teamSelect.prop('disabled', false).trigger('change');
+                });
             }
         });
 
-        function formatItem(item) {
-            if (!item.id) return item.text;
-            const $option = $(item.element);
-            const project = $option.data('project');
-            const designation = $option.data('designation');
-            const name = $option.data('name');
-            const remaining = $option.data('remaining');
-            
-            return $(`
-                <div>
-                    <strong>[${project}]</strong> ${designation}<br>
-                    <small class="text-muted">${name} - ${remaining} remaining</small>
-                </div>
-            `);
-        }
+        // Handle Set Today button
+        $('#setToday').click(function() {
+            const today = new Date().toISOString().split('T')[0];
+            $('#id_production_date').val(today);
+        });
 
         // Handle item selection changes
         $('#item_select').on('change', function() {
-            const selectedOptions = $(this).find('option:selected');
+            const selectedItems = $(this).select2('data');
             const tableBody = $('#selectedItemsTable tbody');
+            const table = $('#selectedItemsTable');
+            
             tableBody.empty();
-
-            if (selectedOptions.length > 0) {
-                $('#selectedItemsTable').show();
-                
-                selectedOptions.each(function() {
-                    const $option = $(this);
-                    const designation = $option.data('designation');
-                    const project = $option.data('project');
-                    const building = $option.data('building');
-                    const profile = $option.data('profile');
-                    const remaining = $option.data('remaining');
-                    const itemId = $option.val();
-
-                    const row = `
-                        <tr>
-                            <td>${designation}</td>
-                            <td>${project}</td>
-                            <td>${building}</td>
-                            <td>${profile}</td>
-                            <td>${remaining}</td>
-                            <td>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" 
-                                           name="quantities[${itemId}]" 
-                                           class="form-control form-control-sm quantity-input" 
-                                           min="1" 
-                                           max="${remaining}"
-                                           step="0.01"
-                                           required>
-                                    <button type="button" 
-                                            class="btn btn-outline-secondary btn-sm max-qty-btn" 
-                                            data-max="${remaining}">
-                                        Max
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+            
+            if (selectedItems.length > 0) {
+                selectedItems.forEach(function(item) {
+                    const row = $('<tr>');
+                    row.append(`<td>${item.element.dataset.designation}</td>`);
+                    row.append(`<td>${item.element.dataset.project}</td>`);
+                    row.append(`<td>${item.element.dataset.building}</td>`);
+                    row.append(`<td>${item.element.dataset.profile}</td>`);
+                    row.append(`<td>${item.element.dataset.remaining}</td>`);
+                    row.append(`
+                        <td>
+                            <input type="number" 
+                                   name="quantity_${item.id}" 
+                                   class="form-control form-control-sm quantity-input" 
+                                   min="0" 
+                                   max="${item.element.dataset.remaining}" 
+                                   step="0.01" 
+                                   required>
+                        </td>
+                    `);
                     tableBody.append(row);
                 });
+                table.show();
             } else {
-                $('#selectedItemsTable').hide();
+                table.hide();
             }
         });
 
-        // Handle max quantity buttons
-        $(document).on('click', '.max-qty-btn', function() {
-            const maxQty = $(this).data('max');
-            $(this).closest('.input-group').find('.quantity-input').val(maxQty);
-        });
-
-        // Handle "Set All Max" button click
-        $('#setAllMaxBtn').on('click', function() {
+        // Handle Set All to Max button
+        $('#setAllMaxBtn').click(function() {
             $('.quantity-input').each(function() {
-                const maxQty = $(this).attr('max');
-                $(this).val(maxQty);
+                $(this).val($(this).attr('max'));
             });
-        });
-
-        // Limit process selection to 3
-        $('#processContainer').on('change', '.process-checkbox', function() {
-            const checkboxes = $('#processContainer .process-checkbox');
-            const checkedCount = checkboxes.filter(':checked').length;
-
-            if (checkedCount > 3) {
-                $(this).prop('checked', false);
-                alert('You can select up to 3 processes.');
-            }
-
-            // Remove required attribute if at least one is checked
-            if (checkedCount > 0) {
-                checkboxes.prop('required', false);
-            } else {
-                checkboxes.prop('required', true);
-            }
-        });
-
-        // Rest of your existing JavaScript...
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const setTodayBtn = document.getElementById('setToday');
-        const productionDateInput = document.getElementById('production_date');
-        const form = document.getElementById('productionLogForm');
-
-        setTodayBtn.addEventListener('click', function() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            productionDateInput.value = `${year}-${month}-${day}`;
         });
 
         // Form validation
-        form.addEventListener('submit', function(e) {
-            const quantityInputs = document.querySelectorAll('input[name^="quantities["]');
-            let isValid = true;
+        $('#productionLogForm').on('submit', function(e) {
+            const selectedItems = $('#item_select').val();
+            if (!selectedItems || selectedItems.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one item.');
+                return false;
+            }
 
-            quantityInputs.forEach(input => {
-                const quantity = parseFloat(input.value);
-                const max = parseFloat(input.max);
-                
-                if (quantity > max) {
+            let valid = true;
+            $('.quantity-input').each(function() {
+                const value = parseFloat($(this).val());
+                const max = parseFloat($(this).attr('max'));
+                if (isNaN(value) || value <= 0 || value > max) {
                     e.preventDefault();
-                    alert(`Quantity cannot exceed the remaining quantity (${max}).`);
-                    isValid = false;
+                    alert('Please enter valid quantities (greater than 0 and not exceeding remaining quantity).');
+                    valid = false;
+                    return false;
                 }
             });
 
-            return isValid;
+            return valid;
         });
     });
 </script>

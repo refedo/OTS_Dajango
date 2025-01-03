@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Filters Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Production Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="project" class="form-label">Project</label>
+                    <select name="project" id="project" class="form-select">
+                        <option value="">All Projects</option>
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {% if selected_project == project.id %}selected{% endif %}>
+                                {{ project.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label">Date From</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label">Date To</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="process" class="form-label">Process</label>
+                    <select name="process" id="process" class="form-select">
+                        <option value="">All Processes</option>
+                        {% for proc in processes %}
+                            <option value="{{ proc.id }}" {% if selected_process == proc.id %}selected{% endif %}>
+                                {{ proc.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a href="{% url 'production_dashboard' %}" class="btn btn-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Progress Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Fit-up Progress</h5>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ fitup_percentage }}%">
+                            {{ fitup_percentage }}%
+                        </div>
+                    </div>
+                    <p class="mb-0">Completed: {{ fitup_completed }} / {{ fitup_total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welding Progress</h5>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ welding_percentage }}%">
+                            {{ welding_percentage }}%
+                        </div>
+                    </div>
+                    <p class="mb-0">Completed: {{ welding_completed }} / {{ welding_total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Visual Inspection Progress</h5>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ visual_percentage }}%">
+                            {{ visual_percentage }}%
+                        </div>
+                    </div>
+                    <p class="mb-0">Completed: {{ visual_completed }} / {{ visual_total }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Production Details Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Production Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Process</th>
+                            <th>Log Designation</th>
+                            <th>Production Date</th>
+                            <th>Produced Quantity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in production_logs %}
+                        <tr>
+                            <td>{{ log.project.name }}</td>
+                            <td>{{ log.process.name }}</td>
+                            <td>{{ log.log_designation }}</td>
+                            <td>{{ log.production_date }}</td>
+                            <td>{{ log.produced_quantity }}</td>
+                            <td>
+                                <span class="badge {% if log.status == 'completed' %}bg-success{% elif log.status == 'in_progress' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ log.status|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any additional JavaScript functionality here
+    });
+</script>
+{% endblock %}

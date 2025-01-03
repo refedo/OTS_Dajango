@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import (Material, ProductionProcess, Project, ProductionLog, QualityCheck, 
-                    MaterialUsage, RawData, ProductionTeam, Building)
+                    MaterialUsage, RawData, ProductionTeam, Building, Facility)
 from datetime import date
 import re
 
@@ -73,16 +73,10 @@ class ProjectForm(forms.ModelForm):
     def clean_project_number(self):
         project_number = self.cleaned_data.get('project_number')
         if project_number:
-            # Ensure project number follows the standard format PRJ-YYYY-XXX
-            if not re.match(r'^PRJ-\d{4}-\d{3}$', project_number):
-                raise ValidationError(
-                    'Project number must follow the format PRJ-YYYY-XXX '
-                    '(e.g., PRJ-2024-001)'
-                )
             # Check uniqueness case-insensitive
             if Project.objects.filter(project_number__iexact=project_number).exclude(pk=self.instance.pk).exists():
                 raise ValidationError('This project number already exists.')
-        return project_number.upper()
+        return project_number.strip()
 
     class Meta:
         model = Project
@@ -90,8 +84,7 @@ class ProjectForm(forms.ModelForm):
         widgets = {
             'project_number': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g., PRJ-2024-001',
-                'pattern': r'^PRJ-\d{4}-\d{3}$'
+                'placeholder': 'Enter project number'
             }),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'client_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -109,73 +102,85 @@ class ProjectWithBuildingsForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
         }
 
-class ProductionLogForm(forms.ModelForm):
+class ProductionLogForm(forms.Form):
     project = forms.ModelChoiceField(
         queryset=Project.objects.all(),
-        required=True,
-        widget=forms.Select(attrs={'class': 'form-select'})
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
     )
-    log_designation = forms.ChoiceField(
-        choices=[],
-        required=True,
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-    team = forms.ModelChoiceField(
-        queryset=ProductionTeam.objects.all(),
-        required=True,
-        widget=forms.Select(attrs={'class': 'form-select'})
+    
+    building = forms.ModelChoiceField(
+        queryset=Building.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
     )
 
-    class Meta:
-        model = ProductionLog
-        fields = [
-            'project', 'log_designation', 'process', 'production_date',
-            'produced_quantity', 'facility', 'team', 'status'
-        ]
-        widgets = {
-            'production_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'produced_quantity': forms.NumberInput(attrs={'step': '0.01', 'class': 'form-control'}),
-            'process': forms.Select(attrs={'class': 'form-select'}),
-            'facility': forms.Select(attrs={'class': 'form-select', 'data-affects': 'team'}),
-            'team': forms.Select(attrs={'class': 'form-select'}),
-            'status': forms.Select(attrs={'class': 'form-select'}),
-        }
+    process = forms.ModelMultipleChoiceField(
+        queryset=ProductionProcess.objects.filter(is_active=True),
+        widget=forms.CheckboxSelectMultiple(),
+        required=True
+    )
+
+    facility = forms.ModelChoiceField(
+        queryset=Facility.objects.filter(is_active=True),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
+    )
+
+    team = forms.ModelChoiceField(
+        queryset=ProductionTeam.objects.filter(is_active=True),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
+    )
+
+    production_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        required=True
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        project = cleaned_data.get('project')
+        building = cleaned_data.get('building')
+        facility = cleaned_data.get('facility')
+        team = cleaned_data.get('team')
+
+        if project and building:
+            if building.project != project:
+                raise forms.ValidationError("Selected building does not belong to the selected project.")
+
+        if facility and team:
+            if team.facility != facility:
+                raise forms.ValidationError("Selected team does not belong to the selected facility.")
+
+        return cleaned_data
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Get unique project numbers and their IDs from raw data
-        project_choices = Project.objects.filter(
-            id__in=RawData.objects.values_list('project', flat=True).distinct()
-        )
-        self.fields['project'].queryset = project_choices
+        # If project is selected, filter buildings
+        if 'project' in self.data:
+            try:
+                project_id = int(self.data.get('project'))
+                self.fields['building'].queryset = Building.objects.filter(project_id=project_id)
+            except (ValueError, TypeError):
+                pass
+        elif self.initial.get('project'):
+            self.fields['building'].queryset = Building.objects.filter(project=self.initial.get('project'))
+        else:
+            self.fields['building'].queryset = Building.objects.none()
 
-        # If we have an instance, populate log_designation choices
-        if self.instance and self.instance.pk:
-            log_choices = RawData.objects.filter(
-                project=self.instance.project
-            ).values_list('log_designation', 'log_designation').distinct()
-            self.fields['log_designation'].choices = [('', '---------')] + list(log_choices)
-
-        # Filter teams based on facility if facility is selected
-        if self.instance and self.instance.facility:
-            self.fields['team'].queryset = ProductionTeam.objects.filter(facility=self.instance.facility)
+        # If facility is selected, filter teams
+        if 'facility' in self.data:
+            try:
+                facility_id = int(self.data.get('facility'))
+                self.fields['team'].queryset = ProductionTeam.objects.filter(facility_id=facility_id, is_active=True)
+            except (ValueError, TypeError):
+                pass
+        elif self.initial.get('facility'):
+            self.fields['team'].queryset = ProductionTeam.objects.filter(facility=self.initial.get('facility'), is_active=True)
         else:
             self.fields['team'].queryset = ProductionTeam.objects.none()
-
-    def clean(self):
-        cleaned_data = super().clean()
-        production_date = cleaned_data.get('production_date')
-        produced_quantity = cleaned_data.get('produced_quantity')
-
-        if production_date and production_date > date.today():
-            self.add_error('production_date', 'Production date cannot be in the future.')
-
-        if produced_quantity is not None:
-            if produced_quantity <= 0:
-                self.add_error('produced_quantity', 'Produced quantity must be greater than zero.')
-
-        return cleaned_data
 
 class QualityCheckForm(forms.ModelForm):
     class Meta:
@@ -318,6 +323,16 @@ class RawDataImportForm(forms.Form):
         required=True,
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    building = forms.ModelChoiceField(
+        queryset=Building.objects.none(),
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'data' in kwargs and kwargs['data'].get('project'):
+            self.fields['building'].queryset = Building.objects.filter(project_id=kwargs['data'].get('project'))
 
     def clean_file(self):
         file = self.cleaned_data['file']

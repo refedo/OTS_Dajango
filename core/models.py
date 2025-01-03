@@ -91,7 +91,7 @@ class Project(models.Model):
 
     # Basic Information
     estimation_number = models.CharField(max_length=20, unique=True, verbose_name='Estimation #', default='EST-000')
-    project_number = models.CharField(max_length=50, unique=True, verbose_name='Project #', help_text='Project number (e.g., PRJ-2024-001)', db_index=True)
+    project_number = models.CharField(max_length=50, unique=True, verbose_name='Project #', help_text='Project number', db_index=True)
     name = models.CharField(max_length=255, verbose_name='Project Name')
     project_manager = models.CharField(max_length=100, verbose_name='Project Manager', null=True, blank=True)
     client_name = models.CharField(max_length=100, verbose_name='Client Name')
@@ -488,6 +488,14 @@ class ProductionLog(models.Model):
         blank=True
     )
     project_number = models.CharField(max_length=50, db_index=True, default='')
+    building = models.ForeignKey(
+        Building,
+        on_delete=models.CASCADE,
+        related_name='production_logs',
+        null=True,
+        blank=True
+    )
+    building_name = models.CharField(max_length=100, null=True, blank=True)
     log_designation = models.CharField(max_length=100)
     process = models.ForeignKey(ProductionProcess, on_delete=models.PROTECT)
     production_date = models.DateField()
@@ -508,8 +516,10 @@ class ProductionLog(models.Model):
         return f"{self.project_number} - {self.log_designation} ({self.production_date})"
 
     def save(self, *args, **kwargs):
-        if self.project and not self.project_number:
+        if self.project:
             self.project_number = self.project.project_number
+        if self.building:
+            self.building_name = self.building.name
         super().save(*args, **kwargs)
 
 class QualityCheck(models.Model):
@@ -555,3 +565,9 @@ class MaterialUsage(models.Model):
             raise ValidationError(
                 f"Not enough {self.material.name} in stock. Available: {self.material.quantity} {self.material.unit}"
             )
+
+class BaseMaterial(models.Model):
+    class Meta:
+        abstract = True
+        verbose_name = 'Base Material'
+        verbose_name_plural = 'Base Materials'

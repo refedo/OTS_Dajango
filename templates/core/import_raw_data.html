@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
 
 {% block title %}Import Raw Data - OTS{% endblock %}
@@ -44,6 +44,16 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="{{ form.building.id_for_label }}" class="form-label">Building</label>
+                            {{ form.building }}
+                            {% if form.building.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.building.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
                             <label for="{{ form.file.id_for_label }}" class="form-label">File</label>
                             {{ form.file }}
                             <div class="form-text">{{ form.file.help_text }}</div>
@@ -74,4 +84,44 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const projectSelect = document.getElementById('id_project');
+    const buildingSelect = document.getElementById('id_building');
+
+    projectSelect.addEventListener('change', function() {
+        const projectId = this.value;
+        buildingSelect.disabled = !projectId;
+        buildingSelect.innerHTML = '<option value="">Select a building</option>';
+        
+        if (projectId) {
+            fetch(`/api/buildings/${projectId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(building => {
+                        const option = document.createElement('option');
+                        option.value = building.id;
+                        option.textContent = building.name;
+                        buildingSelect.appendChild(option);
+                    });
+                    buildingSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching buildings:', error);
+                    buildingSelect.disabled = true;
+                });
+        }
+    });
+
+    // Initialize building select based on initial project value
+    if (projectSelect.value) {
+        projectSelect.dispatchEvent(new Event('change'));
+    } else {
+        buildingSelect.disabled = true;
+    }
+});
+</script>
 {% endblock %}
