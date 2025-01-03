@@ -189,10 +189,18 @@ class MaterialUsageAdmin(admin.ModelAdmin):
 
 @admin.register(RawData)
 class RawDataAdmin(admin.ModelAdmin):
-    list_display = ['row_id', 'project', 'assembly_mark', 'part_mark', 'quantity', 'profile', 'grade']
-    list_filter = ['project', 'assembly_mark', 'grade']
-    search_fields = ['row_id', 'project__project_number', 'assembly_mark', 'part_mark', 'profile', 'grade']
-    readonly_fields = ['row_id', 'created_at', 'updated_at']
+    list_display = [
+        'id', 'project', 'building', 'log_designation', 'part_designation',
+        'assembly_mark', 'part_mark', 'name_designation', 'quantity',
+        'profile', 'grade', 'length', 'net_area_single', 'net_area_total',
+        'single_part_weight', 'net_weight_total', 'revision'
+    ]
+    list_filter = ['project', 'building', 'part_designation', 'grade', 'revision']
+    search_fields = [
+        'id', 'log_designation', 'assembly_mark', 'part_mark', 
+        'name_designation', 'profile', 'grade'
+    ]
+    ordering = ['id']
 
 @admin.register(Facility)
 class FacilityAdmin(admin.ModelAdmin):

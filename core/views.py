@@ -133,7 +133,7 @@ def production_log_create(request):
     # Base query for raw data
     raw_data_query = RawData.objects.select_related('project').values(
         'id', 'project__project_number', 'log_designation', 'building_name', 
-        'name', 'profile', 'quantity'
+        'name_designation', 'profile', 'quantity'
     )
 
     # Get total produced quantities for each log designation
@@ -162,7 +162,7 @@ def production_log_create(request):
             Q(project__project_number__icontains=search_query) |
             Q(building_name__icontains=search_query) |
             Q(log_designation__icontains=search_query) |
-            Q(name__icontains=search_query)
+            Q(name_designation__icontains=search_query)
         )
 
     # Only show items with remaining quantity
@@ -391,27 +391,61 @@ def process_edit(request, pk):
 
 @login_required
 def raw_data_list(request):
-    raw_data = RawData.objects.all().order_by('-created_at')
-
-    # Apply filters if they exist in the request
-    project_number = request.GET.get('project_number')
+    # Get filter parameters
+    project_id = request.GET.get('project')
+    building_id = request.GET.get('building')
     log_designation = request.GET.get('log_designation')
-    part_designation = request.GET.get('part_designation')
     assembly_mark = request.GET.get('assembly_mark')
     part_mark = request.GET.get('part_mark')
 
-    if project_number:
-        raw_data = raw_data.filter(project_number__icontains=project_number)
-    if log_designation:
-        raw_data = raw_data.filter(log_designation__icontains=log_designation)
-    if part_designation:
-        raw_data = raw_data.filter(part_designation__icontains=part_designation)
-    if assembly_mark:
-        raw_data = raw_data.filter(assembly_mark__icontains=assembly_mark)
-    if part_mark:
-        raw_data = raw_data.filter(part_mark__icontains=part_mark)
+    # Start with all raw data
+    queryset = RawData.objects.select_related('project', 'building').all()
 
-    return render(request, 'core/raw_data_list.html', {'raw_data': raw_data})
+    # Apply filters
+    filter_active = False
+    
+    if project_id:
+        queryset = queryset.filter(project_id=project_id)
+        filter_active = True
+    
+    if building_id:
+        queryset = queryset.filter(building_id=building_id)
+        filter_active = True
+
+    if log_designation:
+        queryset = queryset.filter(log_designation__icontains=log_designation)
+        filter_active = True
+
+    if assembly_mark:
+        queryset = queryset.filter(assembly_mark__icontains=assembly_mark)
+        filter_active = True
+
+    if part_mark:
+        queryset = queryset.filter(part_mark__icontains=part_mark)
+        filter_active = True
+
+    # Order by project and log designation
+    queryset = queryset.order_by('project__project_number', 'log_designation', 'assembly_mark')
+
+    # Pagination
+    paginator = Paginator(queryset, 50)  # Show 50 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Get all projects and buildings for filters
+    projects = Project.objects.all().order_by('project_number')
+    buildings = Building.objects.all().order_by('name')
+    if project_id:
+        buildings = buildings.filter(project_id=project_id)
+
+    context = {
+        'page_obj': page_obj,
+        'projects': projects,
+        'buildings': buildings,
+        'filter_active': filter_active,
+    }
+    
+    return render(request, 'core/raw_data_list.html', context)
 
 @login_required
 def raw_data_detail(request, pk):

@@ -300,13 +300,9 @@ class Building(models.Model):
         return self.project.project_number if self.project else None
 
 class RawData(models.Model):
-    row_id = models.CharField(
-        max_length=255, 
-        unique=True, 
-        verbose_name="Row ID",
-        editable=False,
-        null=True,
-        blank=True
+    id = models.AutoField(
+        primary_key=True,
+        verbose_name="Row ID"
     )
     project = models.ForeignKey(
         Project, 
@@ -339,7 +335,8 @@ class RawData(models.Model):
     )
     part_designation = models.CharField(
         max_length=255,
-        verbose_name="Part Designation"
+        verbose_name="Part Designation",
+        help_text="Part designation (e.g., 'ASSEMBLY-BEAM-001' or 'SINGLE-PLATE-001')"
     )
     assembly_mark = models.CharField(
         max_length=255,
@@ -349,10 +346,11 @@ class RawData(models.Model):
         max_length=255,
         verbose_name="Part Mark"
     )
-    name = models.CharField(
+    name_designation = models.CharField(
         max_length=255,
         blank=True,
-        help_text="Part name or description"
+        verbose_name="Name Designation",
+        help_text="Structural element type (e.g., Beam, Column, Bracing, Joist, Plate, etc.)"
     )
     quantity = models.IntegerField(
         verbose_name="Quantity",
@@ -418,8 +416,6 @@ class RawData(models.Model):
     def save(self, *args, **kwargs):
         if self.project and not self.project_number:
             self.project_number = self.project.project_number
-            if not self.row_id:
-                self.row_id = f"{self.project_number}_{self.log_designation}_{self.assembly_mark}_{self.part_mark}"
         super().save(*args, **kwargs)
 
 class Facility(models.Model):

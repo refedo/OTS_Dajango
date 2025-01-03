@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Import Raw Data - OTS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Import Raw Data</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <h5 class="alert-heading">
+                                {% if message.tags == 'error' %}
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Error
+                                {% elif message.tags == 'success' %}
+                                    <i class="fas fa-check-circle me-2"></i>Success
+                                {% endif %}
+                            </h5>
+                            <pre class="mb-0" style="white-space: pre-wrap;">{{ message }}</pre>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.project.id_for_label }}" class="form-label">Project</label>
+                            {{ form.project }}
+                            {% if form.project.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.project.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.file.id_for_label }}" class="form-label">File</label>
+                            {{ form.file }}
+                            <div class="form-text">{{ form.file.help_text }}</div>
+                            {% if form.file.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.file.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <a href="{% static 'templates/raw_data_import_template.xlsx' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-download me-2"></i>Download Import Template
+                            </a>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Import Data
+                            </button>
+                            <a href="{% url 'raw_data_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Raw Data
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

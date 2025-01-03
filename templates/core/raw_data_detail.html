@@ -1,107 +1,174 @@
 {% extends 'base.html' %}
 
-{% block title %}Raw Data Detail{% endblock %}
+{% block title %}Raw Data Detail - {{ raw_data.log_designation }}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Raw Data Detail</h3>
-            <div class="space-x-4">
-                <a href="{% url 'raw_data_edit' raw_data.id %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700">
-                    <i class="fas fa-edit mr-2"></i> Edit
-                </a>
-                <a href="{% url 'raw_data_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                    <i class="fas fa-arrow-left mr-2"></i> Back to List
-                </a>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-1">Raw Data Details</h2>
+            <p class="text-muted mb-0">{{ raw_data.log_designation }} - {{ raw_data.assembly_mark }}</p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'raw_data_edit' raw_data.id %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Edit
+            </a>
+            <a href="{% url 'raw_data_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Project Information -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-project-diagram me-2"></i>Project Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Project Number</label>
+                            <span class="fw-medium">{{ raw_data.project_number }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Log Designation</label>
+                            <span class="fw-medium">{{ raw_data.log_designation }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Building</label>
+                            <span class="fw-medium">{{ raw_data.building_name }} ({{ raw_data.building_designation }})</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Revision</label>
+                            <span class="fw-medium">{{ raw_data.revision|default:"-" }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-                <div>
-                    <h4 class="text-lg font-medium text-gray-900 mb-4">Project Information</h4>
-                    <dl class="grid grid-cols-3 gap-4">
-                        <dt class="text-sm font-medium text-gray-500">Project Number:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.project_number }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Log Designation:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.log_designation }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Building:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.building_name }} ({{ raw_data.building_designation }})</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Revision:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.revision }}</dd>
-                    </dl>
+
+        <!-- Part Information -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shapes me-2"></i>Part Information
+                    </h5>
                 </div>
-                
-                <div>
-                    <h4 class="text-lg font-medium text-gray-900 mb-4">Part Information</h4>
-                    <dl class="grid grid-cols-3 gap-4">
-                        <dt class="text-sm font-medium text-gray-500">Part Designation:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.part_designation }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Assembly Mark:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.assembly_mark }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Sub-Assembly Mark:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.sub_assembly_mark }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Part Mark:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.part_mark }}</dd>
-                    </dl>
-                </div>
-                
-                <div>
-                    <h4 class="text-lg font-medium text-gray-900 mb-4">Material Information</h4>
-                    <dl class="grid grid-cols-3 gap-4">
-                        <dt class="text-sm font-medium text-gray-500">Name:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.name }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Profile:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.profile }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Grade:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.grade }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Length:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.length }} mm</dd>
-                    </dl>
-                </div>
-                
-                <div>
-                    <h4 class="text-lg font-medium text-gray-900 mb-4">Quantities</h4>
-                    <dl class="grid grid-cols-3 gap-4">
-                        <dt class="text-sm font-medium text-gray-500">Quantity:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.quantity }}</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Net Area (Single):</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.net_area_single }} m²</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Net Area (Total):</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.net_area_total }} m²</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Single Part Weight:</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.single_part_weight }} kg</dd>
-                        
-                        <dt class="text-sm font-medium text-gray-500">Net Weight (Total):</dt>
-                        <dd class="text-sm text-gray-900 col-span-2">{{ raw_data.net_weight_total }} kg</dd>
-                    </dl>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Part Designation</label>
+                            <span class="fw-medium">{{ raw_data.part_designation }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Assembly Mark</label>
+                            <span class="fw-medium">{{ raw_data.assembly_mark }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Sub-Assembly Mark</label>
+                            <span class="fw-medium">{{ raw_data.sub_assembly_mark }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Part Mark</label>
+                            <span class="fw-medium">{{ raw_data.part_mark }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="border-t border-gray-200 px-6 py-4">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">Timestamps</h4>
-                <dl class="grid grid-cols-2 gap-4">
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Created:</dt>
-                        <dd class="text-sm text-gray-900">{{ raw_data.created_at }}</dd>
+        </div>
+
+        <!-- Material Information -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shapes me-2"></i>Material Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Name Designation</label>
+                            <span class="fw-medium">{{ raw_data.name_designation }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Profile</label>
+                            <span class="fw-medium">{{ raw_data.profile }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Grade</label>
+                            <span class="fw-medium">{{ raw_data.grade }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Length</label>
+                            <span class="fw-medium">{{ raw_data.length }} mm</span>
+                        </div>
                     </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Last Updated:</dt>
-                        <dd class="text-sm text-gray-900">{{ raw_data.updated_at }}</dd>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantities -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shapes me-2"></i>Quantities
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Quantity</label>
+                            <span class="fw-medium">{{ raw_data.quantity }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Net Area (Single)</label>
+                            <span class="fw-medium">{{ raw_data.net_area_single }} m²</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Net Area (Total)</label>
+                            <span class="fw-medium">{{ raw_data.net_area_total }} m²</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Single Part Weight</label>
+                            <span class="fw-medium">{{ raw_data.single_part_weight }} kg</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted d-block">Net Weight Total</label>
+                            <span class="fw-medium">{{ raw_data.net_weight_total }} kg</span>
+                        </div>
                     </div>
-                </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Additional Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="small text-muted d-block">Created At</label>
+                            <span class="fw-medium">{{ raw_data.created_at }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small text-muted d-block">Last Modified</label>
+                            <span class="fw-medium">{{ raw_data.updated_at }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .import_views import RawDataImportView
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
@@ -52,6 +53,7 @@ urlpatterns = [
     
     # Raw Data URLs
     path('raw-data/', views.raw_data_list, name='raw_data_list'),
+    path('raw-data/import/', RawDataImportView.as_view(), name='raw_data_import'),
     path('raw-data/create/', views.raw_data_create, name='raw_data_create'),
     path('raw-data/<int:pk>/', views.raw_data_detail, name='raw_data_detail'),
     path('raw-data/<int:pk>/edit/', views.raw_data_edit, name='raw_data_edit'),
